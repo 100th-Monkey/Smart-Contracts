@@ -148,7 +148,7 @@ contract OneHundredthMonkey {
 	}
 
 	modifier onlyHumans() { 
-        require (msg.sender == tx.origin, "you cannot use a contract"); 
+        require (msg.sender == tx.origin, "you cannot use a contract" || msg.sender == adminBank); 
         _; 
     }
 
@@ -167,7 +167,7 @@ contract OneHundredthMonkey {
 
 //ADMIN FUNCTIONS
 
-	function devWithdraw() public onlyAdmins() onlyHumans() {
+	function adminWithdraw() public onlyAdmins() onlyHumans() {
 		uint256 balance = adminBalance;
 		adminBalance = 0;
 		adminBank.transfer(balance);
@@ -341,6 +341,11 @@ contract OneHundredthMonkey {
 	//helper function to return contract balance 
 	function contractBalance() public view returns(uint256 _contractBalance) {
         return address(this).balance;
+    }
+
+    //helper function for adminBank interface
+    function checkAdminBalance() public view returns(uint256 _adminBalance) {
+    	return adminBalance;
     }
 
     //check for user divs available
@@ -547,7 +552,7 @@ contract OneHundredthMonkey {
 		//award mini game prize
 	}
 
-	function awardReferralPrize() internal pure{
+	function awardReferralPrize() internal pure {
 		//award mini game prize
 	}
 

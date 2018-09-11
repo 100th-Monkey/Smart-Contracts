@@ -34,7 +34,7 @@ library SafeMath {
 	 }
 }
 
-interface OneHundredthMonkey {
+contract OneHundredthMonkey {
  	
  	function checkAdminBalance() public {}
  	function adminWithdraw() public {}
@@ -59,21 +59,9 @@ contract AdminBank {
 	uint256 public teamMemberCrate = 25; //25% example
 	uint256 public teamMemberDrate = 25; //25% example
 
-	mapping (address => uint256) public teamMemberAtotal;
-	mapping (address => uint256) public teamMemberAunclaimed;
-	mapping (address => uint256) public teamMemberAcalimed;
-
-	mapping (address => uint256) public teamMemberBtotal;
-	mapping (address => uint256) public teamMemberBunclaimed;
-	mapping (address => uint256) public teamMemberBcalimed;
-
-	mapping (address => uint256) public teamMemberCtotal;
-	mapping (address => uint256) public teamMemberCunclaimed;
-	mapping (address => uint256) public teamMemberCcalimed;
-
-	mapping (address => uint256) public teamMemberDtotal;
-	mapping (address => uint256) public teamMemberDunclaimed;
-	mapping (address => uint256) public teamMemberDcalimed;
+	mapping (address => uint256) public teamMemberTotal;
+	mapping (address => uint256) public teamMemberUnclaimed;
+	mapping (address => uint256) public teamMemberClaimed;
 
 	mapping (address => bool) public validTeamMember;
 
@@ -116,12 +104,12 @@ contract AdminBank {
 		//@dev refactor so this works for any team member 
 		if (msg.sender == teamMemberA) {
 			uint256 teamMemberShare = (fundsReceived.mul(teamMemberArate)).div(100);
-			teamMemberAtotal = teamMemberShare;
-			teamMemberAunclaimed = teamMemberAtotal.sub(teamMemberAclaimed);
-			uint256 toTransfer = teamMemberAunclaimed;
-			teamMemberAunclaimed = 0;
-			teamMemberAclaimed = teamMemberAtotal;
-			tranfer.teamMemberA(toTransfer);
+			teamMemberTotal[msg.sender] = teamMemberShare;
+			teamMemberUnclaimed[msg.sender] = teamMemberTotal[msg.sender].sub(teamMemberClaimed[msg.sender]);
+			uint256 toTransfer = teamMemberUnclaimed[msg.sender];
+			teamMemberUnclaimed[msg.sender] = 0;
+			teamMemberClaimed[msg.sender] = teamMemberTotal[msg.sender];
+			teamMemberA.transfer(toTransfer);
 
 			//log event
 		}
@@ -133,7 +121,7 @@ contract AdminBank {
 	    return address(this).balance;
 	}
 
-	fallback () public payable {
+	function () public payable {
 		//log ETH in
 		fundsReceived += msg.value;
 	}

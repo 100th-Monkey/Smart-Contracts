@@ -105,7 +105,7 @@ contract OneHundredthMonkey {
 	//cycle tracking
 	uint256 public cycleCount;
 	mapping (uint256 => uint256) public cycleStartTime;
-	bool public cylceOver = false;
+	bool public cycleOver = false;
 	uint256 public cycleEnded;
 	uint256 public progressivePot;
 
@@ -132,7 +132,7 @@ contract OneHundredthMonkey {
 
 //CONSTRUCTOR
 
-	constructor(address _adminBank) {
+	constructor(address _adminBank) public {
 		//set dev bank address and admins
 		adminBank = _adminBank;
 		admins.push(msg.sender);
@@ -155,7 +155,7 @@ contract OneHundredthMonkey {
     modifier gameOpen() {
     	require (gameActive == true);
     	if (miniGameProcessing == true) {
-    		require (block.number > commitTime.add(3));
+    		require (block.number > processingBegun.add(3));
     	}
     	_;
     }
@@ -195,7 +195,7 @@ contract OneHundredthMonkey {
 	}
 
 	function earlyResolve() public onlyAdmins() onlyHumans() gameOpen() {
-		require (now > miniGameStartTime.add(1 week));
+		require (now > miniGameStartTime[miniGameCount].add(604800)); //1 week
 		gameActive = false;
 		earlyResolveCalled = true;
 		resolveCycle();
@@ -237,7 +237,7 @@ contract OneHundredthMonkey {
 		uint256 tokensPurchased = _amount.div(tokenPrice);
 		uint256 ethSpent = msg.value;
 		//if round tokens are all sold, push difference to user balance and call generateSeedA
-		if tokensPurchased > miniGameTokensLeft[miniGameCount] {
+		if (tokensPurchased > miniGameTokensLeft[miniGameCount]) {
 			uint256 tokensReturned = tokensPurchased.sub(miniGameTokensLeft[miniGameCount]);
 			tokensPurchased = miniGameTokensLeft[miniGameCount];
 			uint256 ethCredit = tokensReturned.mul(tokenPrice);
@@ -264,29 +264,29 @@ contract OneHundredthMonkey {
 
 		//divide msg.value by various percentages and distribute
 		uint256 adminShare = (ethSpent.mul(adminFeeRate)).div(100);
-        adminBalance = admin.Balance(adminShare);
+        adminBalance = adminBalance.add(adminShare);
 
         uint256 miniGamePrizeShare = (ethSpent.mul(miniGamePotRate)).div(100);
-        miniGamePrizePot[miniGameCount] = admin.Balance(miniGamePrizeShare);
+        miniGamePrizePot[miniGameCount] = adminBalance.add(miniGamePrizeShare);
 
         uint256 miniGameAirdropShare = (ethSpent.mul(miniGameAirdropRate)).div(100);
-        miniGameAirdropPot[miniGameCount] = admin.Balance(miniGameAirdropShare);
+        miniGameAirdropPot[miniGameCount] = adminBalance.add(miniGameAirdropShare);
 
         uint256 miniGameDivShare = (ethSpent.mul(miniGameDivRate)).div(100);
-        miniGameDivs[miniGameCount] = admin.Balance(miniGameDivShare);
+        miniGameDivs[miniGameCount] = adminBalance.add(miniGameDivShare);
 
         uint256 roundAirdropShare = (ethSpent.mul(roundAirdropRate)).div(100);
-        roundAirdropPot[roundCount] = admin.Balance(roundAirdropShare);
+        roundAirdropPot[roundCount] = adminBalance.add(roundAirdropShare);
 
         uint256 roundReferralShare = (ethSpent.mul(referralAirdropRate)).div(100);
-        roundReferralAirdropPot[roundCount] = admin.Balance(roundReferralShare);
+        roundReferralAirdropPot[roundCount] = adminBalance.add(roundReferralShare);
 
         uint256 roundDivShare = (ethSpent.mul(roundDivRate)).div(100);
-        roundDivs[roundCount] = admin.Balance(roundDivShare);
+        roundDivs[roundCount] = adminBalance.add(roundDivShare);
 
         //@dev: should round pot also be updated here, as 48% of progressive pot?
         uint256 progressivePotShare = (ethSpent.mul(progressivePotRate)).div(100);
-        progressivePot = admin.Balance(progressivePotShare);
+        progressivePot = adminBalance.add(progressivePotShare);
 
         //log last eligible rounds
         userLastMiniGameInteractedWith[msg.sender] = miniGameCount;
@@ -302,7 +302,8 @@ contract OneHundredthMonkey {
 	}
 
 	function reinvest(uint256 _amount) public onlyHumans() gameOpen() {
-		//add div and last action update
+		//update userBalance()
+		updateUserBalance();
 
 		//checks
 		require (_amount <= userBalance[msg.sender], "insufficient balance");
@@ -313,27 +314,24 @@ contract OneHundredthMonkey {
 		userBalance[msg.sender] = remainingBalance;
 		buy(_amount);
 
-		//update userBalance()
-		updateUserBalance();
+		
 
 		//emit event
 
 	}
 
 	function withdraw() public onlyHumans() {
-		//add div and last action update
+		//update userBalance()
+		updateUserBalance();
 
 		//checks
-		require (userBalance[msg.sender] > 0, "there is nothing to withdraw");
-		require (userBalance[msg.sender] <= address(this).balance, "you can withdraw more than the contract holds");
+		require (userBalance[msg.sender] > 0, "insufficient balance");
+		require (userBalance[msg.sender] <= address(this).balance, "you cannot withdraw more than the contract holds");
 
 		//update user accounting and transfer
 		uint256 toTransfer = userBalance[msg.sender];
 		userBalance[msg.sender] = 0;
 		msg.sender.transfer(toTransfer);
-
-		//update userBalance()
-		updateUserBalance();
 
 		//emit event
 	}
@@ -383,11 +381,11 @@ contract OneHundredthMonkey {
 		//update any user divs by logging last minigame interacted with for any user 
 		//add intelligent require checks at the start of this function to avoid uncessary gas costs if the user is not eligible for a certain prize 
 
-		//push minigame divs to persistent storage
-		//push round divs to persistent storage
+		//push minigame divs to persistent storage and update accounting
+		//push round divs to persistent storage and update accounting
 
 		//push cycle prizes to persistent storage
-		if (cycleEnded == true && userCycleChecked[msg.sender] == false) {
+		if (cycleOver == true && userCycleChecked[msg.sender] == false) {
 			//check if user won cycle prize 
 		}
 
@@ -396,6 +394,7 @@ contract OneHundredthMonkey {
 			//check if user won round 
 			//check if user won round airdrop 
 			//check if user won round refferal airdrop
+			//move funds to persistent storage and update accounting
 			userLastRoundChecked[msg.sender] = userLastRoundInteractedWith[msg.sender];
 		}
 
@@ -403,12 +402,13 @@ contract OneHundredthMonkey {
 		if (userLastMiniGameChecked[msg.sender] < userLastMiniGameInteractedWith[msg.sender] && miniGameCount > userLastMiniGameInteractedWith[msg.sender]) {
 			//check if user won minigame 
 			//check if user won minigame airdrop 
+			//move funds to persistent storage and update accounting
 			userLastMiniGameChecked[msg.sender] = userLastMiniGameInteractedWith[msg.sender];
 		}
 	}
 
 	function miniGameStart() internal {
-		require (cycleEnded == false);
+		require (cycleOver == false);
 		miniGameCount = miniGameCount.add(1);
 		miniGameStartTime[miniGameCount] = now;
 		if (tokenSupply != 0) {
@@ -423,16 +423,20 @@ contract OneHundredthMonkey {
 		if (miniGameCount > 1) {
 			tokenPrice = tokenPrice.add(tokenPriceIncrement);
 		}
+
+		if (miniGameCount % 100 == 0) {
+			roundStart();
+		}
 	}
 
 	function roundStart() internal {
-		require (cycleEnded == false);
+		require (cycleOver == false);
 		roundCount = roundCount.add(1);
 		roundStartTime[roundCount] = now;
 		if (tokenSupply != 0) {
-			roundRangeMin[roundCount] = tokenSupply.add(1);
+			roundTokenRangeMin[roundCount] = tokenSupply.add(1);
 		} else {
-			roundRangeMin[roundCount] = tokenSupply;
+			roundTokenRangeMax[roundCount] = tokenSupply;
 		}
 		if (roundCount > 2) {
 			roundTokenRangeMax[roundCount.sub(1)] = tokenSupply;
@@ -441,22 +445,26 @@ contract OneHundredthMonkey {
 	}
 
 	function cycleStart() internal {
-		require (cycleEnded == false);
+		require (cycleOver == false);
 		cycleCount = cycleCount.add(1);
 		cycleStartTime[cycleCount] = now;
 	}
 
 	function generateTokens() internal returns(uint256 _tokens) {
 		//generate the tokens 
-		return tokens;
-		tokenSupply = tokenSupply.add(tokens);
+		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
+		uint256 randTokens = uint256(hash).mod(100000);
+        uint256 newRoundTokens = randTokens.add(100000);
+        return newRoundTokens;
+		tokenSupply = tokenSupply.add(newRoundTokens);
+		salt++;
 	}
 
 	function generateSeedA() internal {
 		//checks 
 		//can be called again if generateSeedB is not tiggered within 256 blocks 
-		require (miniGameProcessing == false, "you can only call this once" || miniGameProcessing == true && block.number > processingBegun.add(256));
-		require (miniGameTokensLeft[miniGameCount] == 0, "you cannot award the winner if tokens are left in the round" || earlyResolveCalled = true);
+		require (miniGameProcessing == false || miniGameProcessing == true && block.number > processingBegun.add(256));
+		require (miniGameTokensLeft[miniGameCount] == 0 || earlyResolveCalled == true);
 		
 		//generate seed 
 		miniGameProcessing = true;
@@ -492,10 +500,6 @@ contract OneHundredthMonkey {
 
 		miniGameStart();
 
-		if (miniGameCount % 100 == 0) {
-			roundStart();
-		}
-
 		//award person who called this function 
 
 		miniGameProcessing = false;
@@ -521,8 +525,8 @@ contract OneHundredthMonkey {
 
 	function awardRoundPrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-		uint256 roundTokens = tokenSupply.sub(roundTokenRangeMin[roundCount]);
-        uint256 winningNumber = uint256(hash).mod(roundTokens);
+		uint256 currentRoundTokens = tokenSupply.sub(roundTokenRangeMin[roundCount]);
+        uint256 winningNumber = uint256(hash).mod(currentRoundTokens);
         roundPrizeNumber[roundCount] = winningNumber + roundTokenRangeMin[roundCount];
         salt++;
 
@@ -531,25 +535,25 @@ contract OneHundredthMonkey {
 
 	function awardRoundAirdrop() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-		uint256 roundTokens = tokenSupply.sub(roundTokenRangeMin[roundCount]);
-        uint256 winningNumber = uint256(hash).mod(roundTokens);
+		uint256 currentRoundTokens = tokenSupply.sub(roundTokenRangeMin[roundCount]);
+        uint256 winningNumber = uint256(hash).mod(currentRoundTokens);
         roundAirdropNumber[roundCount] = winningNumber + roundTokenRangeMin[roundCount];
         salt++;
 
         //update accounting
 	}
 
-	function awardCyclePrize() internal {
+	function awardCyclePrize() internal pure {
 		//award mini game prize
 	}
 
-	function awardReferralPrize() internal {
+	function awardReferralPrize() internal pure{
 		//award mini game prize
 	}
 
-	function resolveCycle() internal {
+	function resolveCycle() internal view {
 		//resolve cycle  
-		require (cycleEnded = cycle);
+		require (cycleOver == false);
 	}
 
 }

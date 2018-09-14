@@ -2,8 +2,10 @@ pragma solidity ^0.4.25;
 
 //@dev: add div functionality
 //@dev: add referral functionality
-//@dev: add events 
 //@dev: gas optimization in user heavy events 
+//@dev: finish early resolve function
+//@dev: refactor prizes with multiple winners 
+//@dev: make some of the storage variables private 
 
 //@testing: check edge case of single user buying entire minigame 
 
@@ -172,14 +174,14 @@ contract OneHundredthMonkey {
 	}
 
 	modifier onlyHumans() { 
-        require (msg.sender == tx.origin || msg.sender == adminBank); 
+        require (msg.sender == tx.origin || msg.sender == adminBank, "only approved contracts allowed"); 
         _; 
     }
 
     modifier gameOpen() {
-    	require (gameActive == true);
+    	require (gameActive == true, "the game must be open");
     	if (miniGameProcessing == true) {
-    		require (block.number > miniGameProcessingBegun.add(RNGblockDelay));
+    		require (block.number > miniGameProcessingBegun.add(RNGblockDelay), "the round is still processing. try again soon");
     	}
     	_;
     }
@@ -187,8 +189,121 @@ contract OneHundredthMonkey {
 
 //EVENTS
 
-	//add events for any state change
+	//add events for any state change or for other logging purposes 
 
+	event adminWithdrew(
+		uint256 _amount,
+		address _caller,
+		string _message 
+	);
+
+	event cycleStarted(
+		address _caller,
+		string _message
+	);
+
+	event adminAdded(
+		address _caller,
+		address _newAdmin,
+		string _message
+	);
+
+	event resolvedEarly(
+		address _caller,
+		uint256 _pot,
+		string _message
+	);
+
+	event processingRestarted(
+		address _caller,
+		string _message
+	);
+
+	event contractDestroyed(
+		address _caller,
+		uint256 _balance,
+		string _message
+	);
+
+	event userBought(
+		address _user,
+		uint256 _tokensBought,
+		uint256 _miniGameID,
+		string _message
+	);
+
+	event userReinvested(
+		address _user,
+		uint256 _amount,
+		string _message
+	);
+
+	event userWithdrew(
+		address _user,
+		uint256 _amount,
+		string _message
+	);
+
+	event processingStarted(
+		address _caller,
+		uint256 _miniGameID,
+		uint256 _blockNumber,
+		string _message
+	);
+
+	event processingFinished(
+		address _caller,
+		uint256 _miniGameID,
+		uint256 _blockNumber,
+		string _message
+	);
+
+	event newMinigameStarted(
+		uint256 _miniGameID,
+		uint256 _newTokens,
+		string _message
+	);
+
+	event miniGamePrizeAwarded(
+		uint256 _miniGameID,
+		uint256 _winningNumber,
+		uint256 _prize,
+		string _message
+	);
+
+	event miniGameAirdropAwarded(
+		uint256 _miniGameID,
+		uint256 _winningNumber,
+		uint256 _prize,
+		string _message
+	);
+
+	event roundPrizeAwarded(
+		uint256 _miniGameID,
+		uint256 _winningNumber,
+		uint256 _prize,
+		string _message
+	);
+
+	event roundAirdropAwarded(
+		uint256 _miniGameID,
+		uint256 _winningNumber,
+		uint256 _prize,
+		string _message
+	);
+
+	event referralAwarded(
+		uint256 _miniGameID,
+		uint256 _winningNumber,
+		uint256 _prize,
+		string _message
+	);
+
+	event cyclePrizeAwarded(
+		uint256 _winningNumber,
+		uint256 _prize,
+		string _message
+	);
 
 //ADMIN FUNCTIONS
 
@@ -199,18 +314,18 @@ contract OneHundredthMonkey {
 		//@dev check gas costs of admin bank and change to call with gas stipend if necessary
 		adminBank.transfer(balance);
 
-		//emit event
+		emit adminWithdrew(balance, msg.sender, "an admin just withdrew");
 	}
 
 	function startCycle() public onlyAdmins() onlyHumans() {
-		require (gameActive == false && cycleCount == 0);
+		require (gameActive == false && cycleCount == 0, "the cycle has already been started");
 		gameActive = true;
 
 		cycleStart();
 		roundStart();
 		miniGameStart();
 
-		//emit event
+		emit cycleStarted(msg.sender, "a new cycle just started"); 
 
 	}
 
@@ -218,32 +333,33 @@ contract OneHundredthMonkey {
 		admins.push(_newAdmin);
 		isAdmin[_newAdmin] = true;
 
-		//emit event
+		emit adminAdded(msg.sender, _newAdmin, "a new admin was added");
 	}
 
 	function earlyResolve() public onlyAdmins() onlyHumans() gameOpen() {
-		require (now > miniGameStartTime[miniGameCount].add(604800)); //1 week
+		require (now > miniGameStartTime[miniGameCount].add(604800), "earlyResolve cannot be called yet"); //1 week
 		gameActive = false;
 		earlyResolveCalled = true;
 		resolveCycle();
 
-		//emit event
+		emit resolvedEarly(msg.sender, cycleProgressivePot, "the cycle was resolved early"); 
 	}
 
 	function restartMiniGame() public onlyAdmins() onlyHumans() gameOpen() {
-		require (miniGameProcessing == true && block.number > miniGameProcessingBegun.add(256));
+		require (miniGameProcessing == true && block.number > miniGameProcessingBegun.add(256), "restartMiniGame cannot be called yet");
 		generateSeedA();
 
-		//emit event
+		emit processingRestarted(msg.sender, "mini-game processing was restarted");
 	}
 
 	function zeroOut() public onlyAdmins() onlyHumans() {
 		//admins can close the contract no sooner than 90 days after a full cycle completes 
         require (now >= cycleEnded.add(90 days) && cycleOver == true, "too early to close the contract"); 
+        uint256 balance = address(this).balance;
         //selfdestruct and transfer to dev bank 
         selfdestruct(adminBank);
 
-        //emit event
+        emit contractDestroyed(msg.sender, balance, "contract destroyed");
     }
 
     //helper function to find unclaimed prizes
@@ -290,6 +406,7 @@ contract OneHundredthMonkey {
 		require (userMiniGameTokensMin[msg.sender][roundCount].length < 10, "you are buying too often in this round"); 
 
 		//update user accounting 
+		//@dev this should this happen after the return of excess funds?
 		uint256 tokensPurchased = _amount.div(tokenPrice);
 		uint256 ethSpent = msg.value;
 
@@ -379,7 +496,7 @@ contract OneHundredthMonkey {
         //update user balance, if necessary
 		updateUserBalance(msg.sender);
 
-		//emit event
+		emit userBought(msg.sender, tokensPurchased, miniGameCount, "a user just bought tokens");
 	}
 
 	function reinvest(uint256 _amount) public onlyHumans() gameOpen() {
@@ -395,7 +512,7 @@ contract OneHundredthMonkey {
 		userBalance[msg.sender] = remainingBalance;
 		buy(_amount);
 
-		//emit event
+		emit userReinvested(msg.sender, _amount, "a user reinvested");
 
 	}
 
@@ -404,7 +521,7 @@ contract OneHundredthMonkey {
 		updateUserBalance(msg.sender);
 
 		//checks
-		require (userBalance[msg.sender] > 0, "insufficient balance");
+		require (userBalance[msg.sender] > 0, "no balance to withdraw");
 		require (userBalance[msg.sender] <= address(this).balance, "you cannot withdraw more than the contract holds");
 
 		//update user accounting and transfer
@@ -412,7 +529,7 @@ contract OneHundredthMonkey {
 		userBalance[msg.sender] = 0;
 		msg.sender.transfer(toTransfer);
 
-		//emit event
+		emit userWithdrew(msg.sender, toTransfer, "a user withdrew");
 	}
 
 
@@ -693,7 +810,7 @@ contract OneHundredthMonkey {
 	}
 
 	function miniGameStart() internal {
-		require (cycleOver == false);
+		require (cycleOver == false, "the cycle cannot be over");
 		miniGameCount = miniGameCount.add(1);
 		miniGameStartTime[miniGameCount] = now;
 		if (tokenSupply != 0) {
@@ -712,10 +829,12 @@ contract OneHundredthMonkey {
 		if (miniGameCount % miniGamesPerRound == 0) {
 			roundStart();
 		}
+
+		emit newMinigameStarted(miniGameCount, miniGameTokens[miniGameCount], "new minigame started");
 	}
 
 	function roundStart() internal {
-		require (cycleOver == false);
+		require (cycleOver == false, "the cycle cannot be over");
 		roundCount = roundCount.add(1);
 		roundStartTime[roundCount] = now;
 		if (tokenSupply != 0) {
@@ -732,7 +851,7 @@ contract OneHundredthMonkey {
 	}
 
 	function cycleStart() internal {
-		require (cycleOver == false);
+		require (cycleOver == false, "the cycle cannot be over");
 		cycleCount = cycleCount.add(1);
 		cycleStartTime = now;
 	}
@@ -750,8 +869,8 @@ contract OneHundredthMonkey {
 	function generateSeedA() internal {
 		//checks 
 		//can be called again if generateSeedB is not tiggered within 256 blocks 
-		require (miniGameProcessing == false || miniGameProcessing == true && block.number > miniGameProcessingBegun.add(256));
-		require (miniGameTokensLeft[miniGameCount] == 0 || earlyResolveCalled == true);
+		require (miniGameProcessing == false || miniGameProcessing == true && block.number > miniGameProcessingBegun.add(256), "seed A cannot be regenerated right now");
+		require (miniGameTokensLeft[miniGameCount] == 0 || earlyResolveCalled == true, "active tokens remain in this minigame");
 		
 		//generate seed 
 		miniGameProcessing = true;
@@ -766,6 +885,8 @@ contract OneHundredthMonkey {
 		if (miniGameCount % miniGamesPerRound == 0) {
 			roundEndTime[roundCount] = now;
 		}
+
+		emit processingStarted(msg.sender, miniGameCount, block.number, "processing started");
 
 		//@dev award person who called this function
 	}
@@ -798,6 +919,8 @@ contract OneHundredthMonkey {
 		//@dev award person who called this function 
 
 		miniGameProcessing = false;
+
+		emit processingFinished(msg.sender, miniGameCount, block.number, "processing finished");
 	}
 
 	function awardMiniGamePrize() internal returns(uint256){
@@ -808,7 +931,7 @@ contract OneHundredthMonkey {
 
         //update accounting
 
-        //emit event
+        emit miniGamePrizeAwarded(miniGameCount, winningNumber, miniGamePrizePot[miniGameCount], "minigame prize awarded");
 	}
 
 	function awardMiniGameAirdrop() internal {
@@ -819,8 +942,7 @@ contract OneHundredthMonkey {
 
          //update accounting
 
-         //emit event
-
+        emit miniGameAirdropAwarded(miniGameCount, winningNumber, miniGameAirdropPot[miniGameCount], "minigame airdrop awarded");
 	}
 
 	function awardRoundPrize() internal {
@@ -832,7 +954,7 @@ contract OneHundredthMonkey {
 
         //update accounting
 
-		//emit event
+		emit roundPrizeAwarded(roundCount, winningNumber, roundPrizePot[roundCount], "round prize awarded");
 	}
 
 	function awardRoundAirdrop() internal {
@@ -844,13 +966,13 @@ contract OneHundredthMonkey {
 
         //update accounting
 
-		//emit event
+		emit roundAirdropAwarded(roundCount, winningNumber, roundAirdropPot[roundCount], "round airdrop awarded");
 	}
 
 	function awardCyclePrize() internal pure {
-		//award mini game prize
+		//@dev award mini game prize
 
-		//emit event
+		//emit cyclePrizeAwarded(winningNumber, cycleProgressivePot, "cycle prize awarded");
 	}
 
 	function awardReferralPrize() internal pure {
@@ -864,7 +986,7 @@ contract OneHundredthMonkey {
 	function resolveCycle() internal view {
 		//resolve cycle  
 		//@dev add functionality to resolve the cycle ealy
-		require (cycleOver == false);
+		require (cycleOver == false, "the cycle is still active");
 	}
 
 	function narrowRoundPrize(uint256 _ID) internal returns(uint256 _miniGameID) {

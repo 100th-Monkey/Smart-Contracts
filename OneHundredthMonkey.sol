@@ -442,37 +442,40 @@ contract OneHundredthMonkey {
     //referral prize @dev add when referral functionality is fleshed out
 
     //historic minigame data, retreivable by index
-    //@dev running into "stack too deep" errors on these function; refactor
-    /*
     function miniGameInfo(uint256 _miniGameID) public view returns(
     	uint256 _id, 
     	bool _resolved, 
-    	uint256 _prize,
-    	uint256 _airdrop,
     	uint256 _participants,
     	uint256 _startTime,
     	uint256 _endTime,
-    	uint256 _totalTokens,
-    	uint256 _tokensBought,
-    	uint256 _tokensLeft,
-    	bool _prizeClaimed,
-    	uint256 _winningNumber,
-    	bool _airdropClaimed,
-    	uint256 _airdropWinningNumber
+    	uint256 _totalTokens
     	) {
     	bool isActive;
     	if (_miniGameID == miniGameCount) {isActive = true;} else {isActive = false;}
     	return (
     		_miniGameID,
     		isActive,
-    		miniGamePrizePot[_miniGameID],
-    		miniGameAirdropPot[_miniGameID],
     		miniGameParticipants[_miniGameID].length,
     		miniGameStartTime[_miniGameID],
     		miniGameEndTime[_miniGameID],
-    		miniGameTokens[_miniGameID],
-    		miniGameTokensActive[_miniGameID],
-    		miniGameTokensLeft[_miniGameID],
+    		miniGameTokens[_miniGameID]
+    	);
+    }
+
+    //split up to avoid stack depth limits 
+    function miniGamePrizeInfo(uint256 _miniGameID) public view returns(
+    	uint256 _id, 
+    	uint256 _prize,
+    	uint256 _airdrop,
+    	bool _prizeClaimed,
+    	uint256 _winningNumber,
+    	bool _airdropClaimed,
+    	uint256 _airdropWinningNumber
+    	) {
+    	return (
+    		_miniGameID,
+    		miniGamePrizePot[_miniGameID],
+    		miniGameAirdropPot[_miniGameID],
     		miniGamePrizeClaimed[_miniGameID],
     		miniGamePrizeNumber[_miniGameID],
     		miniGameAirdropClaimed[_miniGameID],
@@ -484,35 +487,43 @@ contract OneHundredthMonkey {
     function roundInfo(uint256 _roundID) public view returns(
     	uint256 _id, 
     	bool _resolved, 
-    	uint256 _prize,
-    	uint256 _airdrop,
     	uint256 _participants,
     	uint256 _startTime,
     	uint256 _endTime,
-    	uint256 _tokensBought,
-    	bool _prizeClaimed,
-    	uint256 _winningNumber,
-    	bool _airdropClaimed,
-    	uint256 _airdropWinningNumber
+    	uint256 _tokensBought
     	) {
     	bool isActive;
     	if (_roundID == roundCount) {isActive = true;} else {isActive = false;}
     	return (
     		_roundID,
     		isActive,
-    		roundPrizePot[_roundID],
-    		roundAirdropPot[_roundID],
     		roundParticipants[_roundID].length,
     		roundStartTime[_roundID],
     		roundEndTime[_roundID],
-    		miniGameTokensActive[_roundID],
+    		miniGameTokensActive[_roundID]
+    	);
+    }
+
+    //split up to avoid stack depth limits 
+    function roundPrizeInfo(uint256 _roundID) public view returns(
+    	uint256 _id, 
+    	uint256 _prize,
+    	uint256 _airdrop,
+    	bool _prizeClaimed,
+    	uint256 _winningNumber,
+    	bool _airdropClaimed,
+    	uint256 _airdropWinningNumber
+    	) {
+    	return (
+    		_roundID,
+    		roundPrizePot[_roundID],
+    		roundAirdropPot[_roundID],
     		miniGamePrizeClaimed[_roundID],
     		miniGamePrizeNumber[_roundID],
     		miniGameAirdropClaimed[_roundID],
     		miniGameAirdropNumber[_roundID]
     	);
     }
-    */
 
     //cycle data	
     function cycleInfo() public view returns(
@@ -973,5 +984,6 @@ contract OneHundredthMonkey {
                 }
             }
         }		
-     }
+	}
+
 }

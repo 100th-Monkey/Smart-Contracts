@@ -103,8 +103,8 @@ contract OneHundredthMonkey {
 	mapping (uint256 => uint256) public miniGamePrizePot;
 	mapping (uint256 => uint256) public miniGameAirdropPot;
 	mapping (uint256 => uint256) public miniGameDivs;
-	mapping (uint256 => uint256) public miniGamePrizeWinner;
-	mapping (uint256 => uint256) public miniGameAirdropWinner;
+	mapping (uint256 => address) public miniGamePrizeWinner;
+	mapping (uint256 => address) public miniGameAirdropWinner;
 	mapping (uint256 => address[]) public miniGameParticipants;
 
 	//round tracking
@@ -128,8 +128,8 @@ contract OneHundredthMonkey {
 	mapping (uint256 => uint256) public roundDivs;
 	mapping (uint256 => uint256) public roundPrizeInMinigame;
 	mapping (uint256 => uint256) public roundAirdropInMinigame;
-	mapping (uint256 => uint256) public roundPrizeWinner;
-	mapping (uint256 => uint256) public roundAirdropWinner;
+	mapping (uint256 => address) public roundPrizeWinner;
+	mapping (uint256 => address) public roundAirdropWinner;
 	mapping (uint256 => address[]) public roundParticipants;
 
 	//cycle tracking
@@ -464,7 +464,7 @@ contract OneHundredthMonkey {
         roundDivs[roundCount] += roundDivShare;
 
         uint256 miniGamePrize = ethSpent.mul(miniGamePotRate).div(100);
-        miniGamePrizePot[miniGameCount] += miniGamePrizePot;
+        miniGamePrizePot[miniGameCount] += miniGamePrize;
 
         uint256 miniGameAirdrop = ethSpent.mul(miniGameAirdropRate).div(100);
         miniGameAirdropPot[miniGameCount] += miniGameAirdrop;
@@ -750,7 +750,7 @@ contract OneHundredthMonkey {
 				if (roundPrizeNumber[_ID] >= userMiniGameTokensMin[_user][mgp][i] && roundPrizeNumber[_ID] <= userMiniGameTokensMax[_user][mgp][i]) {
 					userBalance[_user] += roundPrizePot[mgp];
 					roundPrizeClaimed[_ID] = true;
-					roundPrizeWinner = msg.sender;		
+					roundPrizeWinner[_ID] = msg.sender;		
 					break;
 				}
 			}
@@ -768,7 +768,7 @@ contract OneHundredthMonkey {
 				if (roundAirdropNumber[_ID] >= userMiniGameTokensMin[_user][mga][i] && roundAirdropNumber[_ID] <= userMiniGameTokensMax[_user][mga][i]) {
 					userBalance[_user] += roundAirdropPot[mga];
 					roundAirdropClaimed[_ID] = true;
-					roundAirdropClaimed = msg.sender;
+					roundAirdropWinner[_ID] = msg.sender;
 					break;
 				}
 			}
@@ -784,7 +784,7 @@ contract OneHundredthMonkey {
 				if (miniGamePrizeNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGamePrizeNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {
 					userBalance[_user] += miniGamePrizePot[mg];
 					miniGamePrizeClaimed[mg] = true;
-					miniGamePrizeWinner = msg.sender;			
+					miniGamePrizeWinner[mg] = msg.sender;			
 					break;
 				}
 			}
@@ -792,7 +792,7 @@ contract OneHundredthMonkey {
 				if (miniGameAirdropNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGameAirdropNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {
 					userBalance[_user] += miniGameAirdropPot[mg];
 					miniGameAirdropClaimed[mg] = true;
-					miniGameAirdropWinner = msg.sender;
+					miniGameAirdropWinner[mg] = msg.sender;
 					break;
 				}
 			}

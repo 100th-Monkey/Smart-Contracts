@@ -1,11 +1,9 @@
 pragma solidity ^0.4.25;
 
-//@dev: add div functionality
 //@dev: add referral functionality
 //@dev: gas optimization in user heavy events 
 //@dev: refactor prizes with multiple winners 
 //@dev: make some of the storage variables private
-//@dev: add incentive to call both resolve functions 
 
 //@testing: check edge case of single user buying entire minigame 
 
@@ -74,6 +72,7 @@ contract OneHundredthMonkey {
 	uint256 public roundAirdropRate = 3; //3%
 	uint256 public referralAirdropRate = 3; //3%
 	uint256 public adminFeeRate = 5; //5%
+	uint256 public precisionFactor = 6; //percentages precise to 0.0001%
 	uint256 public seedAreward = 25000000000000000; //0.025 ETH
 	uint256 public seedBreward = 25000000000000000; //0.025 ETH
 	mapping (uint256 => bool) public miniGameSeedAawarded;
@@ -163,6 +162,14 @@ contract OneHundredthMonkey {
 	mapping (address => uint256) public userLastRoundChecked;
 	mapping (address => mapping (uint256 => uint256)) public userMiniGameTokens;
 	mapping (address => mapping (uint256 => uint256)) public userRoundTokens;
+	mapping (address => mapping (uint256 => uint256)) public userShareMiniGame;
+	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameTotal;
+	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameClaimed;
+	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameUnclaimed;
+	mapping (address => mapping (uint256 => uint256)) public userShareRound;
+	mapping (address => mapping (uint256 => uint256)) public userDivsRoundTotal;
+	mapping (address => mapping (uint256 => uint256)) public userDivsRoundClaimed;
+	mapping (address => mapping (uint256 => uint256)) public userDivsRoundUnclaimed;
 	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMin;
 	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMax;
 
@@ -457,6 +464,12 @@ contract OneHundredthMonkey {
 		uint256 adminShare = (ethSpent.mul(adminFeeRate)).div(100);
         adminBalance += adminShare;
 
+        uint256 mgDivs = (ethSpent.mul(miniGameDivRate)).div(100);
+        miniGameDivs[miniGameCount] += mgDivs;
+
+        uint256 rndDivs = (ethSpent.mul(roundDivRate)).div(100);
+        roundDivs[roundCount] += rndDivs;
+
         uint256 roundReferralShare = (ethSpent.mul(referralAirdropRate)).div(100);
         roundReferralAirdropPot[roundCount] += roundReferralShare;
 
@@ -696,13 +709,41 @@ contract OneHundredthMonkey {
 
 //INTERNAL FUNCTIONS
 
-	function updateUserBalance(address _user) internal {
-		//@dev add div check
-			//update any user divs by logging last minigame interacted with for any user 
-			//push minigame divs to persistent storage and update accounting
-			//push round divs to persistent storage and update accounting
+	function checkDivs(address _user) internal {
+		//minigame divs 
+		userShareMiniGame[_user][userLastMiniGameChecked[_user]] = userMiniGameTokens[_user][userLastMiniGameChecked[_user]].mul(10 ** (precisionFactor + 1)).div(miniGameTokens[userLastMiniGameChecked[_user]] + 5).div(10);
+        userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]] = miniGameDivs[userLastMiniGameChecked[_user]].mul(userShareMiniGame[_user][userLastMiniGameChecked[_user]]).div(10 ** precisionFactor);
+        userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]].sub(userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]]);
+        //add to user balance
+        if (userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] > 0) {
+            //sanity check
+            assert(userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] <= address(this).balance);
 
-		//@dev add refferal check 
+            userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]];
+            uint256 shareTempMg = userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]];
+            userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = 0;
+	        
+	        userBalance[_user] += shareTempMg;
+        }
+
+        //round divs 
+        //@dev running into stack depth issues here. troubleshoot
+		userShareRound[_user][userLastRoundChecked[_user]] = userRoundTokens[_user][userLastRoundChecked[_user]].mul(10 ** (precisionFactor + 1)).div(roundTokens[userLastRoundChecked[_user]] + 5).div(10);
+        userDivsRoundTotal[_user][userLastRoundChecked[_user]] = roundDivs[userLastRoundChecked[_user]].mul(userShareRound[_user][userLastRoundChecked[_user]]).div(10 ** precisionFactor);
+        userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]].sub(userDivsRoundClaimed[_user][userLastRoundChecked[_user]]);
+        //add to user balance
+        if (userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] > 0) {
+            //sanity check
+            assert(userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] <= address(this).balance);
+            userDivsRoundClaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]];
+            uint256 shareTempRnd = userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]];
+            userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = 0;
+	        
+	        userBalance[_user] += shareTempRnd;
+        }	
+	}
+
+	function checkPrizes(address _user) internal {
 
 		//push cycle prizes to persistent storage
 		if (cycleOver == true && userCycleChecked[_user] == false) {
@@ -800,6 +841,13 @@ contract OneHundredthMonkey {
 		}
 	}
 
+	function updateUserBalance(address _user) internal {
+		checkDivs(_user);
+		checkPrizes(_user);
+
+		//@dev add refferal check 
+	}
+
 	function miniGameStart() internal {
 		require (cycleOver == false, "the cycle cannot be over");
 		miniGameCount++;
@@ -875,12 +923,13 @@ contract OneHundredthMonkey {
 			roundEndTime[roundCount] = now;
 		}
 
-		emit processingStarted(msg.sender, miniGameCount, block.number, "processing started");
-
+		//award processing bounty
 		if (miniGameSeedAawarded[miniGameCount] == false) {
 			userBalance[msg.sender] += seedAreward;
 			miniGameSeedAawarded[miniGameCount] = true;
 		}
+
+		emit processingStarted(msg.sender, miniGameCount, block.number, "processing started");
 	}
 
 	function generateSeedB() internal {
@@ -888,14 +937,6 @@ contract OneHundredthMonkey {
 
 		awardMiniGamePrize();
 		awardMiniGameAirdrop();
-
-		if (miniGameCount % 10 == 0) {
-			//@dev do era stuff
-		}
-
-		if (miniGameCount % 25 == 0) {
-			//@dev do epoch stuff
-		}
 
 		if (miniGameCount % miniGamesPerRound - 1 == 0) {
 			awardRoundAirdrop();
@@ -907,6 +948,7 @@ contract OneHundredthMonkey {
 			gameActive = false;
 		}
 
+		//award processing bounty 
 		if (miniGameSeedBawarded[miniGameCount] == false) {
 			userBalance[msg.sender] += seedBreward;
 			miniGameSeedBawarded[miniGameCount] = true;

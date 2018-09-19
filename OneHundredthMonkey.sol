@@ -1,5 +1,6 @@
 pragma solidity ^0.4.25;
 
+//@dev: add div functionality
 //@dev: add referral functionality
 //@dev: gas optimization in user heavy events 
 //@dev: refactor prizes with multiple winners 
@@ -709,39 +710,39 @@ contract OneHundredthMonkey {
 
 //INTERNAL FUNCTIONS
 
-	function checkDivs(address _user) internal {
-		//minigame divs 
-		userShareMiniGame[_user][userLastMiniGameChecked[_user]] = userMiniGameTokens[_user][userLastMiniGameChecked[_user]].mul(10 ** (precisionFactor + 1)).div(miniGameTokens[userLastMiniGameChecked[_user]] + 5).div(10);
-        userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]] = miniGameDivs[userLastMiniGameChecked[_user]].mul(userShareMiniGame[_user][userLastMiniGameChecked[_user]]).div(10 ** precisionFactor);
-        userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]].sub(userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]]);
-        //add to user balance
-        if (userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] > 0) {
-            //sanity check
-            assert(userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] <= address(this).balance);
+// 	function checkDivs(address _user) internal {
+// 		//minigame divs 
+// 		userShareMiniGame[_user][userLastMiniGameChecked[_user]] = userMiniGameTokens[_user][userLastMiniGameChecked[_user]].mul(10 ** (precisionFactor + 1)).div(miniGameTokens[userLastMiniGameChecked[_user]] + 5).div(10);
+//         userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]] = miniGameDivs[userLastMiniGameChecked[_user]].mul(userShareMiniGame[_user][userLastMiniGameChecked[_user]]).div(10 ** precisionFactor);
+//         userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]].sub(userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]]);
+//         //add to user balance
+//         if (userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] > 0) {
+//             //sanity check
+//             assert(userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] <= address(this).balance);
 
-            userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]];
-            uint256 shareTempMg = userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]];
-            userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = 0;
+//             userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]];
+//             uint256 shareTempMg = userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]];
+//             userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = 0;
 	        
-	        userBalance[_user] += shareTempMg;
-        }
+// 	        userBalance[_user] += shareTempMg;
+//         }
 
-        //round divs 
-        //@dev running into stack depth issues here. troubleshoot
-		userShareRound[_user][userLastRoundChecked[_user]] = userRoundTokens[_user][userLastRoundChecked[_user]].mul(10 ** (precisionFactor + 1)).div(roundTokens[userLastRoundChecked[_user]] + 5).div(10);
-        userDivsRoundTotal[_user][userLastRoundChecked[_user]] = roundDivs[userLastRoundChecked[_user]].mul(userShareRound[_user][userLastRoundChecked[_user]]).div(10 ** precisionFactor);
-        userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]].sub(userDivsRoundClaimed[_user][userLastRoundChecked[_user]]);
-        //add to user balance
-        if (userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] > 0) {
-            //sanity check
-            assert(userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] <= address(this).balance);
-            userDivsRoundClaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]];
-            uint256 shareTempRnd = userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]];
-            userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = 0;
+//         //round divs 
+//         //@dev running into stack depth issues here. troubleshoot
+// 		userShareRound[_user][userLastRoundChecked[_user]] = userRoundTokens[_user][userLastRoundChecked[_user]].mul(10 ** (precisionFactor + 1)).div(roundTokens[userLastRoundChecked[_user]] + 5).div(10);
+//         userDivsRoundTotal[_user][userLastRoundChecked[_user]] = roundDivs[userLastRoundChecked[_user]].mul(userShareRound[_user][userLastRoundChecked[_user]]).div(10 ** precisionFactor);
+//         userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]].sub(userDivsRoundClaimed[_user][userLastRoundChecked[_user]]);
+//         //add to user balance
+//         if (userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] > 0) {
+//             //sanity check
+//             assert(userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] <= address(this).balance);
+//             userDivsRoundClaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]];
+//             uint256 shareTempRnd = userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]];
+//             userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = 0;
 	        
-	        userBalance[_user] += shareTempRnd;
-        }	
-	}
+// 	        userBalance[_user] += shareTempRnd;
+//         }	
+// 	}
 
 	function checkPrizes(address _user) internal {
 
@@ -842,7 +843,7 @@ contract OneHundredthMonkey {
 	}
 
 	function updateUserBalance(address _user) internal {
-		checkDivs(_user);
+		//checkDivs(_user);
 		checkPrizes(_user);
 
 		//@dev add refferal check 

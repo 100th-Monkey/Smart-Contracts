@@ -5,6 +5,7 @@ pragma solidity ^0.4.25;
 //@dev: gas optimization in user heavy events 
 //@dev: refactor prizes with multiple winners 
 //@dev: make some of the storage variables private
+//@dev: gas improvements limit pushes to arrays (possible with limited use of structs)
 
 //@testing: check edge case of single user buying entire minigame 
 
@@ -416,8 +417,9 @@ contract OneHundredthMonkey {
 
 //USER FUNCTIONS
 
-	function () public payable onlyHumans() gameOpen() {
+	function () public payable {
 		//funds sent directly to contract will trigger buy
+		//@dev modifiers removed here, check will happen on buy()
 		buy(msg.value);
 	}
 
@@ -427,7 +429,7 @@ contract OneHundredthMonkey {
 		require (_amount >= tokenPrice, "you must buy at least one token");
 		//check to ensure the user will not break the loop when checking for winning prizes; should never be reached under normal circumstances
 		//@dev optimize based on gas costs of prize checks 
-		require (userMiniGameTokensMin[msg.sender][roundCount].length < 10, "you are buying too often in this round"); 
+		require (userMiniGameTokensMin[msg.sender][roundCount].length < 50, "you are buying too often in this round"); 
 
 		//assign tokens
 		uint256 tokensPurchased = _amount.div(tokenPrice);
@@ -501,9 +503,10 @@ contract OneHundredthMonkey {
 		miniGameTokensActive[miniGameCount] += tokensPurchased;
 
 		//update participant accounting
-		miniGameParticipants[miniGameCount].push(msg.sender);
-		roundParticipants[roundCount].push(msg.sender);
-		cycleParticipants.push(msg.sender);
+		//@dev removed to save gas on unnessary SSTORE operations
+		// miniGameParticipants[miniGameCount].push(msg.sender);
+		// roundParticipants[roundCount].push(msg.sender);
+		// cycleParticipants.push(msg.sender);
         
 		//update total eth spent 
 		cycleETHspent += ethSpent;
@@ -710,39 +713,39 @@ contract OneHundredthMonkey {
 
 //INTERNAL FUNCTIONS
 
-// 	function checkDivs(address _user) internal {
-// 		//minigame divs 
-// 		userShareMiniGame[_user][userLastMiniGameChecked[_user]] = userMiniGameTokens[_user][userLastMiniGameChecked[_user]].mul(10 ** (precisionFactor + 1)).div(miniGameTokens[userLastMiniGameChecked[_user]] + 5).div(10);
-//         userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]] = miniGameDivs[userLastMiniGameChecked[_user]].mul(userShareMiniGame[_user][userLastMiniGameChecked[_user]]).div(10 ** precisionFactor);
-//         userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]].sub(userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]]);
-//         //add to user balance
-//         if (userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] > 0) {
-//             //sanity check
-//             assert(userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] <= address(this).balance);
+	function checkDivs(address _user) internal {
+		//minigame divs 
+		userShareMiniGame[_user][userLastMiniGameChecked[_user]] = userMiniGameTokens[_user][userLastMiniGameChecked[_user]].mul(10 ** (precisionFactor + 1)).div(miniGameTokens[userLastMiniGameChecked[_user]] + 5).div(10);
+        userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]] = miniGameDivs[userLastMiniGameChecked[_user]].mul(userShareMiniGame[_user][userLastMiniGameChecked[_user]]).div(10 ** precisionFactor);
+        userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]].sub(userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]]);
+        //add to user balance
+        if (userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] > 0) {
+            //sanity check
+            assert(userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] <= address(this).balance);
 
-//             userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]];
-//             uint256 shareTempMg = userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]];
-//             userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = 0;
+            userDivsMiniGameClaimed[_user][userLastMiniGameChecked[_user]] = userDivsMiniGameTotal[_user][userLastMiniGameChecked[_user]];
+            uint256 shareTempMg = userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]];
+            userDivsMiniGameUnclaimed[_user][userLastMiniGameChecked[_user]] = 0;
 	        
-// 	        userBalance[_user] += shareTempMg;
-//         }
+	        userBalance[_user] += shareTempMg;
+        }
 
-//         //round divs 
-//         //@dev running into stack depth issues here. troubleshoot
-// 		userShareRound[_user][userLastRoundChecked[_user]] = userRoundTokens[_user][userLastRoundChecked[_user]].mul(10 ** (precisionFactor + 1)).div(roundTokens[userLastRoundChecked[_user]] + 5).div(10);
-//         userDivsRoundTotal[_user][userLastRoundChecked[_user]] = roundDivs[userLastRoundChecked[_user]].mul(userShareRound[_user][userLastRoundChecked[_user]]).div(10 ** precisionFactor);
-//         userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]].sub(userDivsRoundClaimed[_user][userLastRoundChecked[_user]]);
-//         //add to user balance
-//         if (userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] > 0) {
-//             //sanity check
-//             assert(userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] <= address(this).balance);
-//             userDivsRoundClaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]];
-//             uint256 shareTempRnd = userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]];
-//             userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = 0;
+        //round divs 
+        //@dev running into stack depth issues here. troubleshoot
+		userShareRound[_user][userLastRoundChecked[_user]] = userRoundTokens[_user][userLastRoundChecked[_user]].mul(10 ** (precisionFactor + 1)).div(roundTokens[userLastRoundChecked[_user]] + 5).div(10);
+        userDivsRoundTotal[_user][userLastRoundChecked[_user]] = roundDivs[userLastRoundChecked[_user]].mul(userShareRound[_user][userLastRoundChecked[_user]]).div(10 ** precisionFactor);
+        userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]].sub(userDivsRoundClaimed[_user][userLastRoundChecked[_user]]);
+        //add to user balance
+        if (userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] > 0) {
+            //sanity check
+            assert(userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] <= address(this).balance);
+            userDivsRoundClaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]];
+            uint256 shareTempRnd = userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]];
+            userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = 0;
 	        
-// 	        userBalance[_user] += shareTempRnd;
-//         }	
-// 	}
+	        userBalance[_user] += shareTempRnd;
+        }	
+	}
 
 	function checkPrizes(address _user) internal {
 
@@ -939,12 +942,12 @@ contract OneHundredthMonkey {
 		awardMiniGamePrize();
 		awardMiniGameAirdrop();
 
-		if (miniGameCount % miniGamesPerRound - 1 == 0) {
+		if (miniGameCount % miniGamesPerRound - 1 == 0 && miniGameCount > 2) {
 			awardRoundAirdrop();
 			awardRoundPrize();
 		}
 
-		if (miniGameCount % miniGamesPerCycle - 1 == 0) {
+		if (miniGameCount % miniGamesPerCycle - 1 == 0 && miniGameCount > 2) {
 			awardCyclePrize();
 			gameActive = false;
 		}
@@ -962,7 +965,7 @@ contract OneHundredthMonkey {
 		emit processingFinished(msg.sender, miniGameCount, block.number, "processing finished");
 	}
 
-	function awardMiniGamePrize() internal returns(uint256){
+	function awardMiniGamePrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
         uint256 winningNumber = uint256(hash).mod(miniGameTokens[miniGameCount]);
         miniGamePrizeNumber[miniGameCount] = winningNumber + miniGameTokenRangeMin[miniGameCount];

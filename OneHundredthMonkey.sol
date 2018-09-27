@@ -317,7 +317,6 @@ contract OneHundredthMonkey {
 		uint256 balance = adminBalance;
 		adminBalance = 0;
 
-		//@dev check gas costs of admin bank and change to call with gas stipend if necessary
 		adminBank.transfer(balance);
 
 		emit adminWithdrew(balance, msg.sender, "an admin just withdrew");
@@ -445,7 +444,6 @@ contract OneHundredthMonkey {
        	}
 
 		//divide msg.value by various percentages and distribute
-		//@dev could this be moved to withdraw?
 		uint256 adminShare = (ethSpent.mul(adminFeeRate)).div(100);
         adminBalance += adminShare;
 
@@ -600,7 +598,6 @@ contract OneHundredthMonkey {
         }
 
         //round divs 
-        //@dev running into stack depth issues here. troubleshoot
 		userShareRound[_user][userLastRoundChecked[_user]] = userRoundTokens[_user][userLastRoundChecked[_user]].mul(10 ** (precisionFactor + 1)).div(roundTokens[userLastRoundChecked[_user]] + 5).div(10);
         userDivsRoundTotal[_user][userLastRoundChecked[_user]] = roundDivs[userLastRoundChecked[_user]].mul(userShareRound[_user][userLastRoundChecked[_user]]).div(10 ** precisionFactor);
         userDivsRoundUnclaimed[_user][userLastRoundChecked[_user]] = userDivsRoundTotal[_user][userLastRoundChecked[_user]].sub(userDivsRoundClaimed[_user][userLastRoundChecked[_user]]);
@@ -634,7 +631,6 @@ contract OneHundredthMonkey {
 			//check if user won minigame 
 			//loop iterations bounded to a max of 10 on buy()
     			for (uint256 i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
-    				//@dev add additional loop to check various price indices of multi-winner prizes 
     				if (cyclePrizeWinningNumber >= userMiniGameTokensMin[_user][mg][i] && cyclePrizeWinningNumber <= userMiniGameTokensMax[_user][mg][i]) {
     					userBalance[_user] += cycleProgressivePot;
     					cylcePrizeClaimed = true;
@@ -660,7 +656,6 @@ contract OneHundredthMonkey {
 			}
 			//check if user won round prize
 			for (i = 0; i < userMiniGameTokensMin[_user][mgp].length; i++) {
-				//@dev add additional loop to check various price indices 
 				if (roundPrizeNumber[_ID] >= userMiniGameTokensMin[_user][mgp][i] && roundPrizeNumber[_ID] <= userMiniGameTokensMax[_user][mgp][i]) {
 					userBalance[_user] += roundPrizePot[mgp];
 					roundPrizeClaimed[_ID] = true;
@@ -697,10 +692,8 @@ contract OneHundredthMonkey {
 	}
 
 	function updateUserBalance(address _user) internal {
-		//checkDivs(_user);
+		checkDivs(_user);
 		checkPrizes(_user);
-
-		//@dev add refferal check 
 	}
 
 	function miniGameStart() internal {
@@ -877,7 +870,6 @@ contract OneHundredthMonkey {
 
 	function narrowRoundPrize(uint256 _ID) internal returns(uint256 _miniGameID) {
 		//narrows down the token range of a round to a specific miniGame
-		//@dev verify this is working correctly with the different token counts in each mingame 
 
 		//set up local accounting
 		uint256 winningNumber = roundPrizeNumber[_ID];
@@ -920,7 +912,6 @@ contract OneHundredthMonkey {
 
 	function narrowCyclePrize() internal returns(uint256 _miniGameID) {
 		//narrows down the token range of a round to a specific miniGame
-		//@dev verify this is working correctly with the different token counts in each mingame 
 
 		uint256 winningNumber = cyclePrizeWinningNumber;
 

@@ -194,100 +194,100 @@ contract OneHundredthMonkey {
 
 	event adminWithdrew(
 		uint256 _amount,
-		address _caller,
+		address indexed _caller,
 		string _message 
 	);
 
 	event cycleStarted(
-		address _caller,
+		address indexed _caller,
 		string _message
 	);
 
 	event adminAdded(
-		address _caller,
-		address _newAdmin,
+		address indexed _caller,
+		address indexed _newAdmin,
 		string _message
 	);
 
 	event resolvedEarly(
-		address _caller,
+		address indexed _caller,
 		uint256 _pot,
 		string _message
 	);
 
 	event processingRestarted(
-		address _caller,
+		address indexed _caller,
 		string _message
 	);
 
 	event contractDestroyed(
-		address _caller,
+		address indexed _caller,
 		uint256 _balance,
 		string _message
 	);
 
 	event userBought(
-		address _user,
+		address indexed _user,
 		uint256 _tokensBought,
-		uint256 _miniGameID,
+		uint256 indexed _miniGameID,
 		string _message
 	);
 
 	event userReinvested(
-		address _user,
+		address indexed _user,
 		uint256 _amount,
 		string _message
 	);
 
 	event userWithdrew(
-		address _user,
+		address indexed _user,
 		uint256 _amount,
 		string _message
 	);
 
 	event processingStarted(
-		address _caller,
-		uint256 _miniGameID,
+		address indexed _caller,
+		uint256 indexed _miniGameID,
 		uint256 _blockNumber,
 		string _message
 	);
 
 	event processingFinished(
-		address _caller,
-		uint256 _miniGameID,
+		address indexed _caller,
+		uint256 indexed _miniGameID,
 		uint256 _blockNumber,
 		string _message
 	);
 
 	event newMinigameStarted(
-		uint256 _miniGameID,
+		uint256 indexed _miniGameID,
 		uint256 _newTokens,
 		string _message
 	);
 
 	event miniGamePrizeAwarded(
-		uint256 _miniGameID,
+		uint256 indexed _miniGameID,
 		uint256 _winningNumber,
 		uint256 _prize,
 		string _message
 	);
 
 	event miniGameAirdropAwarded(
-		uint256 _miniGameID,
+		uint256 indexed _miniGameID,
 		uint256 _winningNumber,
 		uint256 _prize,
 		string _message
 	);
 
 	event roundPrizeAwarded(
-		uint256 _miniGameID,
+		uint256 indexed _miniGameID,
 		uint256 _winningNumber,
 		uint256 _prize,
 		string _message
 	);
 
 	event referralAwarded(
-		uint256 _miniGameID,
+		uint256 indexed _miniGameID,
 		uint256 _winningNumber,
 		uint256 _prize,
 		string _message
@@ -300,14 +300,14 @@ contract OneHundredthMonkey {
 	);
 
 	event whitelistAdded(
-		address _caller,
-		address _contract,
+		address indexed _caller,
+		address indexed _contract,
 		string _message
 	);
 
 	event whitelistRemoved(
-		address _caller,
-		address _contract,
+		address indexed _caller,
+		address indexed _contract,
 		string _message
 	);
 
@@ -443,7 +443,7 @@ contract OneHundredthMonkey {
        		cycleProgressivePot += referralShare;
        	}
 
-		//divide msg.value by various percentages and distribute
+		//divide _amount by various percentages and distribute
 		uint256 adminShare = (ethSpent.mul(adminFeeRate)).div(100);
         adminBalance += adminShare;
 

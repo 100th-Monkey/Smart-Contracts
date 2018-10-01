@@ -1,6 +1,6 @@
-//@testing: check edge case of single user buying entire minigame
-//@dev refactor checkUserDivs with local variables so it does not cause a state change
-//@dev confirm early resolve works correctly
+//@testing check edge case of single user buying entire minigame
+//@testing confirm early resolve works correctly
+//@testing confirm narrow round and cycle functions are working properly
 
 pragma solidity ^0.4.25;
 
@@ -46,18 +46,18 @@ contract OneHundredthMonkey {
 	//STORAGE//
 	///////////
 
-	//admin
+	//ADMIN
 	uint256 public adminBalance;
 	address public adminBank;
 	address[] public admins;
 	mapping (address => bool) public isAdmin;
 
-	//global
+	//GLOBAL
 	bool public gameActive = false;
 	bool public earlyResolveACalled = false;
 	bool public earlyResolveBCalled = false;
 	uint256 public miniGamesPerRound = 4; //@dev lowered for testing 
-	uint256 public miniGamesPerCycle = 1000;
+	uint256 public miniGamesPerCycle = 10;
 	uint256 public miniGamePotRate = 25; //25%
 	uint256 public progressivePotRate = 25; //25%
 	uint256 public roundDivRate = 20; //20%
@@ -66,19 +66,19 @@ contract OneHundredthMonkey {
 	uint256 public miniGameAirdropRate = 5; //5%
 	uint256 public adminFeeRate = 5; //5%
 	uint256 public roundPotRate = 48; //48% of progressive pot 
-	uint256 public precisionFactor = 9; //percentages precise to 0.0000001%
+	uint256 internal precisionFactor = 9; //percentages precise to 0.0000001%
 	uint256 public seedAreward = 25000000000000000; //0.025 ETH
 	uint256 public seedBreward = 25000000000000000; //0.025 ETH
 	mapping (uint256 => bool) public miniGameSeedAawarded;
 	mapping (uint256 => bool) public miniGameSeedBawarded;
 	
 	//RNG
-    uint256 public salt = 0;
-    uint256 public RNGblockDelay = 1;
-    bytes32 public hashA;
-    bytes32 public hashB;
+	uint256 internal RNGblockDelay = 1;
+    uint256 internal salt = 0;
+    bytes32 internal hashA;
+    bytes32 internal hashB;
 
-	//mini-game tracking
+	//MINIGAME TRACKING
 	bool public miniGameProcessing;
 	uint256 public miniGameCount;
 	uint256 public miniGameProcessingBegun;
@@ -99,7 +99,7 @@ contract OneHundredthMonkey {
 	mapping (uint256 => address) public miniGamePrizeWinner;
 	mapping (uint256 => address) public miniGameAirdropWinner;
 
-	//round tracking
+	//ROUND TRACKING
 	uint256 public roundCount;
 	mapping (uint256 => bool) public roundPrizeClaimed;
 	mapping (uint256 => bool) public roundPrizeTokenRangeIdentified;
@@ -115,7 +115,7 @@ contract OneHundredthMonkey {
 	mapping (uint256 => uint256) public roundPrizeInMinigame;
 	mapping (uint256 => address) public roundPrizeWinner;
 
-	//cycle tracking
+	//CYCLE TRACKING
 	bool public cycleOver = false;
 	bool public cylcePrizeClaimed;
 	bool public cyclePrizeTokenRangeIdentified;
@@ -130,30 +130,32 @@ contract OneHundredthMonkey {
 	uint256 public cycleStartTime;
 	address public cyclePrizeWinner;
 
-	//tokens
+	//TOKEN TRACKING
 	uint256 public tokenPrice = 0.001 ether;
 	uint256 public tokenPriceIncrement = 0.0005 ether;
 
-	//user tracking
-	mapping (address => bool) public userCycleChecked;
+	//USER TRACKING PUBLIC
 	mapping (address => uint256) public userTokens;
 	mapping (address => uint256) public userBalance;
-	mapping (address => uint256) public userLastMiniGameInteractedWith;
-	mapping (address => uint256) public userLastRoundInteractedWith;
-	mapping (address => uint256) public userLastMiniGameChecked;
-	mapping (address => uint256) public userLastRoundChecked;
 	mapping (address => mapping (uint256 => uint256)) public userMiniGameTokens;
 	mapping (address => mapping (uint256 => uint256)) public userRoundTokens;
-	mapping (address => mapping (uint256 => uint256)) public userShareMiniGame;
-	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameTotal;
-	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameClaimed;
-	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameUnclaimed;
-	mapping (address => mapping (uint256 => uint256)) public userShareRound;
-	mapping (address => mapping (uint256 => uint256)) public userDivsRoundTotal;
-	mapping (address => mapping (uint256 => uint256)) public userDivsRoundClaimed;
-	mapping (address => mapping (uint256 => uint256)) public userDivsRoundUnclaimed;
-	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMin;
-	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMax;
+
+	//USER TRACKING INTERNAL
+	mapping (address => bool) internal userCycleChecked;
+	mapping (address => uint256) internal userLastMiniGameInteractedWith;
+	mapping (address => uint256) internal userLastRoundInteractedWith;
+	mapping (address => uint256) internal userLastMiniGameChecked;
+	mapping (address => uint256) internal userLastRoundChecked;
+	mapping (address => mapping (uint256 => uint256)) internal userShareMiniGame;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameTotal;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameClaimed;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameUnclaimed;
+	mapping (address => mapping (uint256 => uint256)) internal userShareRound;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundTotal;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundClaimed;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundUnclaimed;
+	mapping (address => mapping (uint256 => uint256[])) internal userMiniGameTokensMin;
+	mapping (address => mapping (uint256 => uint256[])) internal userMiniGameTokensMax;
 
 	
 	///////////////
@@ -418,6 +420,7 @@ contract OneHundredthMonkey {
 		emit userWithdrew(msg.sender, toTransfer, "a user withdrew");
 	}
 
+
 	//////////////////
 	//VIEW FUNCTIONS//
 	//////////////////
@@ -429,9 +432,7 @@ contract OneHundredthMonkey {
 
     //check for user divs available
     function checkUserDivsAvailable(address _user) external view returns(uint256 _userDivsAvailable) {
-    	//@dev refactor with local variables so it does not cause a state change
-    	updateUserBalance(_user);
-    	return userBalance[_user];
+    	return userBalance[_user] + checkDivsMgView(_user) + checkDivsRndView(_user) + checkPrizesView(_user);
     }
 
     //user chance of winning minigame prize or airdrop
@@ -583,7 +584,6 @@ contract OneHundredthMonkey {
             userDivsMiniGameUnclaimed[_user][_mg] = 0;
 	        userBalance[_user] += shareTempMg;
         }
-
         //calculate round divs 
 		userShareRound[_user][_rnd] = userRoundTokens[_user][_rnd].mul(10 ** (precisionFactor + 1)).div(roundTokens[_rnd] + 5).div(10);
         userDivsRoundTotal[_user][_rnd]  = roundDivs[_rnd].mul(userShareRound[_user][_rnd]).div(10 ** precisionFactor);
@@ -672,6 +672,102 @@ contract OneHundredthMonkey {
 			//update last mini game checked 
 			userLastMiniGameChecked[_user] = userLastMiniGameInteractedWith[_user];
 		}
+	}
+
+	//helper function for up to date front end balances without state change
+	function checkDivsMgView(address _user) internal view returns(uint256 _divs) {
+		//set up local shorthand
+		uint256 _mg = userLastMiniGameChecked[_user];
+		uint256 mgShare = userShareMiniGame[_user][_mg];
+		uint256 mgTotal = userDivsMiniGameTotal[_user][_mg];
+		uint256 mgUnclaimed = userDivsMiniGameUnclaimed[_user][_mg];
+		//calculate minigame divs 
+		mgShare = userMiniGameTokens[_user][_mg].mul(10 ** (precisionFactor + 1)).div(miniGameTokens[_mg] + 5).div(10);
+        mgTotal = miniGameDivs[_mg].mul(mgShare).div(10 ** precisionFactor);
+        mgUnclaimed = mgTotal.sub(userDivsMiniGameClaimed[_user][_mg]);
+
+        return mgUnclaimed;
+	}
+	
+	//helper function for up to date front end balances without state change
+	function checkDivsRndView(address _user) internal view returns(uint256 _divs) {
+		//set up local shorthand
+		uint256 _rnd = userLastRoundChecked[_user];
+		uint256 rndShare = userShareRound[_user][_rnd];
+		uint256 rndTotal = userDivsRoundTotal[_user][_rnd];
+		uint256 rndUnclaimed = userDivsRoundUnclaimed[_user][_rnd];
+        //calculate round divs 
+		rndShare = userRoundTokens[_user][_rnd].mul(10 ** (precisionFactor + 1)).div(roundTokens[_rnd] + 5).div(10);
+        rndTotal = roundDivs[_rnd].mul(rndShare).div(10 ** precisionFactor);
+        rndUnclaimed = rndTotal.sub(userDivsRoundClaimed[_user][_rnd]);
+
+        return rndUnclaimed;
+	}
+
+	//helper function for up to date front end balances without state change
+	function checkPrizesView(address _user) internal view returns(uint256 _prizes) {
+		//local accounting
+		uint256 prizeValue;
+		//push cycle prizes to persistent storage
+		if (cycleOver == true && userCycleChecked[_user] == false) {
+			//get minigame cycle prize was in 
+			uint256 mg;
+			if (cyclePrizeTokenRangeIdentified == true) {
+				mg = cyclePrizeInMinigame;
+			} else {
+				narrowCyclePrizeView();
+				mg = cyclePrizeInMinigame;
+			}
+			//check if user won cycle prize 
+			if (cylcePrizeClaimed == false && userMiniGameTokensMax[_user][mg].length > 0) {
+			//check if user won minigame 
+			//loop iterations bounded to a max of 10 on buy()
+    			for (uint256 i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
+    				if (cyclePrizeWinningNumber >= userMiniGameTokensMin[_user][mg][i] && cyclePrizeWinningNumber <= userMiniGameTokensMax[_user][mg][i]) {
+    					prizeValue += cycleProgressivePot;			
+    					break;
+    				}
+    			}
+			}
+		}
+		//push round prizes to persistent storage
+		if (userLastRoundChecked[_user] < userLastRoundInteractedWith[_user] && roundCount > userLastRoundInteractedWith[_user]) {
+			//get minigame round prize was in 
+			uint256 mgp;
+			uint256 _ID = userLastRoundChecked[_user];
+			if (roundPrizeTokenRangeIdentified[_ID] == true) {
+				mgp = roundPrizeInMinigame[_ID];
+			} else {
+				narrowRoundPrizeView(_ID);
+				mgp = roundPrizeInMinigame[_ID];
+			}
+			//check if user won round prize
+			for (i = 0; i < userMiniGameTokensMin[_user][mgp].length; i++) {
+				if (roundPrizeNumber[_ID] >= userMiniGameTokensMin[_user][mgp][i] && roundPrizeNumber[_ID] <= userMiniGameTokensMax[_user][mgp][i]) {
+					prizeValue += roundPrizePot[mgp];	
+					break;
+				}
+			}
+		}
+		//push minigame prizes to persistent storage
+		if (userLastMiniGameChecked[_user] < userLastMiniGameInteractedWith[_user] && miniGameCount > userLastMiniGameInteractedWith[_user]) {
+			//check if user won minigame 
+			mg = userLastMiniGameInteractedWith[_user];
+			for (i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
+				if (miniGamePrizeNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGamePrizeNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {
+					prizeValue += miniGamePrizePot[mg];			
+					break;
+				}
+			}
+			//check if user won airdrop
+			for (i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
+				if (miniGameAirdropNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGameAirdropNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {
+					prizeValue += miniGameAirdropPot[mg];
+					break;
+				}
+			}
+		}
+		return prizeValue;
 	}
 
 	function updateUserBalance(address _user) internal {
@@ -854,6 +950,7 @@ contract OneHundredthMonkey {
 	}
 
 	//narrows down the token range of a round to a specific miniGame
+	//reduces the search space on user prize updates 
 	function narrowRoundPrize(uint256 _ID) internal returns(uint256 _miniGameID) {
 		//set up local accounting
 		uint256 winningNumber = roundPrizeNumber[_ID];
@@ -894,6 +991,7 @@ contract OneHundredthMonkey {
 	}
 
 	//narrows down the token range of a round to a specific miniGame
+	//reduces the search space on user prize updates 
 	function narrowCyclePrize() internal returns(uint256 _miniGameID) {
 		//set up local accounting
 		uint256 winningNumber = cyclePrizeWinningNumber;
@@ -945,6 +1043,104 @@ contract OneHundredthMonkey {
                     cyclePrizeInRound = miniGameRangeMin + (i - 1);
                     cyclePrizeTokenRangeIdentified = true;
                     return cyclePrizeInRound;
+                    break;
+                }
+            }
+        }		
+	}
+
+	//helper function for up to date front end balances without state change
+	function narrowRoundPrizeView(uint256 _ID) internal view returns(uint256 _miniGameID) {
+		//set up local accounting
+		uint256 winningNumber = roundPrizeNumber[_ID];
+		uint256 miniGameRangeMin; 
+		uint256 miniGameRangeMid;
+		uint256 miniGameRangeMax;
+		uint256 mg;
+		if (_ID == 1) {
+			miniGameRangeMin = 1;
+			miniGameRangeMid = 100;
+			miniGameRangeMax = 50;
+		} else if (_ID >= 2 && _ID <= 100) {
+			miniGameRangeMin = _ID.mul(100);
+			miniGameRangeMid = _ID.mul(100) + 100;
+			miniGameRangeMax = _ID.mul(100) + 50;
+		}	
+		//loop through each minigame to check prize number
+		//split in two ranges to save gas on loop
+		//log so this only needs to be called once per prize 
+        if (winningNumber >= miniGameRangeMid) {
+            for (uint i = miniGameRangeMid; i <= miniGameRangeMax; i++) {
+                if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
+                    mg = miniGameRangeMin + (i - 1);
+                    return mg;
+                    break;
+                }
+            }
+        } else if (winningNumber < miniGameRangeMid) {
+            for (i = 1; i < miniGameRangeMid; i++) {
+                if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
+                    mg = miniGameRangeMin + (i - 1);
+                    return mg;
+                    break;
+                }
+            }
+        }		
+	}
+
+	//helper function for up to date front end balances without state change
+	function narrowCyclePrizeView() internal view returns(uint256 _miniGameID) {
+		//set up local accounting
+		uint256 winningNumber = cyclePrizeWinningNumber;
+		uint256 rnd;
+		//first identify round 
+        if (winningNumber >= roundTokenRangeMin[50]) {
+            for (uint256 i = 50; i <= roundCount; i++) {
+                if (winningNumber >= roundTokenRangeMin[i] && winningNumber <= roundTokenRangeMax[i]) {
+                    rnd = i;
+                    break;
+                }
+            }
+        } else if (winningNumber < roundTokenRangeMin[50]) {
+            for (i = 1; i < 50; i++) {
+                if (winningNumber >= roundTokenRangeMin[i] && winningNumber <= roundTokenRangeMax[i]) {
+                    rnd = i;
+                    break;
+                }
+            }
+        }	
+        //set up minigame local accounting 
+        uint256 miniGameRangeMin; 
+		uint256 miniGameRangeMid;
+		uint256 miniGameRangeMax;
+		uint256 _ID = rnd;
+		uint256 mg;
+
+		if (_ID == 1) {
+			miniGameRangeMin = 1;
+			miniGameRangeMid = 100;
+			miniGameRangeMax = 50;
+		} else if (_ID >= 2 && _ID <= 100) {
+			miniGameRangeMin = _ID.mul(100);
+			miniGameRangeMid = _ID.mul(100) + 100;
+			miniGameRangeMax = _ID.mul(100) + 50;
+		}
+		//then loop through each minigame to check prize number
+		//split in two ranges to save gas on loop
+		//log so this only needs to be called once per prize 
+        if (winningNumber >= miniGameRangeMid) {
+            for (i = miniGameRangeMid; i <= miniGameRangeMax; i++) {
+                if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
+                    mg = miniGameRangeMin + (i - 1);
+                    return mg;
+                    break;
+                }
+            }
+        } else if (winningNumber < miniGameRangeMid) {
+            for (i = 1; i < miniGameRangeMid; i++) {
+                if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
+                    mg = miniGameRangeMin + (i - 1);
+                    return mg;
                     break;
                 }
             }

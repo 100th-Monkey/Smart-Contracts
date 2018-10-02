@@ -1,3 +1,9 @@
+////////////////////////
+//ONE HUNDREDTH MONKEY//
+////////////////////////
+
+//2018.10.01 | draft for security audit
+
 pragma solidity ^0.4.25;
 
 library SafeMath {
@@ -52,8 +58,8 @@ contract OneHundredthMonkey {
 	bool public gameActive = false;
 	bool public earlyResolveACalled = false;
 	bool public earlyResolveBCalled = false;
-	uint256 public miniGamesPerRound = 1; //@dev lowered for testing 
-	uint256 public miniGamesPerCycle = 2; //@dev lowered for testing 
+	uint256 public miniGamesPerRound = 100; //@dev lower for testing 
+	uint256 public miniGamesPerCycle = 1000; //@dev lower for testing 
 	uint256 public miniGamePotRate = 25; //25%
 	uint256 public progressivePotRate = 25; //25%
 	uint256 public roundDivRate = 20; //20%
@@ -318,7 +324,7 @@ contract OneHundredthMonkey {
 		adminBalance = 0;
 		adminBank.transfer(balance);
 
-		//emit adminWithdrew(balance, msg.sender, "an admin just withdrew");
+		emit adminWithdrew(balance, msg.sender, "an admin just withdrew");
 	}
 
 	function startCycle() external onlyAdmins() onlyHumans() {
@@ -329,7 +335,7 @@ contract OneHundredthMonkey {
 		roundStart();
 		miniGameStart();
 
-		//emit cycleStarted(msg.sender, "a new cycle just started"); 
+		emit cycleStarted(msg.sender, "a new cycle just started"); 
 
 	}
 

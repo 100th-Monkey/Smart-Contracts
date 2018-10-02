@@ -1,5 +1,3 @@
-//@dev fix edge case of last buy triggering cycle processing but still purchasing tokens 
-
 pragma solidity ^0.4.25;
 
 library SafeMath {
@@ -54,7 +52,7 @@ contract OneHundredthMonkey {
 	bool public gameActive = false;
 	bool public earlyResolveACalled = false;
 	bool public earlyResolveBCalled = false;
-	uint256 public miniGamesPerRound = 2; //@dev lowered for testing 
+	uint256 public miniGamesPerRound = 1; //@dev lowered for testing 
 	uint256 public miniGamesPerCycle = 2; //@dev lowered for testing 
 	uint256 public miniGamePotRate = 25; //25%
 	uint256 public progressivePotRate = 25; //25%
@@ -521,12 +519,12 @@ contract OneHundredthMonkey {
 		userLastMiniGameInteractedWith[msg.sender] = miniGameCount;
 		userLastRoundInteractedWith[msg.sender] = roundCount;	
 
+		uint256 referralShare = (ethSpent.mul(referralRate)).div(100);
 		//check referral
 		if (_referral != 0x0000000000000000000000000000000000000000 && _referral != msg.sender) {
            // assign refferal
-           uint256 referralShare = (ethSpent.mul(referralRate)).div(100);
            userBalance[_referral] += referralShare;
-       	} else {
+       	} else if (_referral == 0x0000000000000000000000000000000000000000 || _referral == msg.sender){
        		//if no referral used, add to progessive pot 
        		cycleProgressivePot += referralShare;
        	}
@@ -627,7 +625,7 @@ contract OneHundredthMonkey {
 			userCycleChecked[_user] = true;
 		}
 		//push round prizes to persistent storage
-		if (roundPrizeClaimed[userLastRoundInteractedWith[_user]] == false && roundCount > userLastRoundInteractedWith[_user]) {
+		if (roundPrizeClaimed[userLastRoundInteractedWith[_user]] == false && roundPrizeTokenRangeIdentified[userLastRoundInteractedWith[_user]]) {
 			//get minigame round prize was in 
 			uint256 rnd = userLastRoundInteractedWith[_user];
 			uint256 mgp = roundPrizeInMinigame[rnd];
@@ -682,7 +680,7 @@ contract OneHundredthMonkey {
 		if (tokenSupply != 0) {
 			miniGameTokenRangeMin[miniGameCount] = tokenSupply + 1;
 		} else {
-			miniGameTokenRangeMin[miniGameCount] = tokenSupply;
+			miniGameTokenRangeMin[miniGameCount] = 0;
 		}
 		//genreate tokens and update accounting 
 		miniGameTokens[miniGameCount] = generateTokens();
@@ -693,12 +691,12 @@ contract OneHundredthMonkey {
 			tokenPrice += tokenPriceIncrement;
 		}
 		//award prizes and start new round if current round is complete 
-		if (miniGameCount % (miniGamesPerRound + 1) == 0) {
+		if (miniGameCount % miniGamesPerRound == 0 && miniGameCount > 1) {
 			awardRoundPrize();
 			roundStart();
 		}
 		//award prize if cycle is complete 
-		if (miniGameCount % (miniGamesPerCycle + 1) == 0) {
+		if (miniGameCount % (miniGamesPerCycle + 1) == 0 && miniGameCount > 1) {
 			awardCyclePrize();
 			gameActive = false;
 		}
@@ -713,13 +711,13 @@ contract OneHundredthMonkey {
 		roundStartTime[roundCount] = now;
 		//set up special case for correct token range on first round 
 		if (tokenSupply != 0) {
-			roundTokenRangeMin[roundCount] = tokenSupply + 1;
+			roundTokenRangeMin[roundCount] = miniGameTokenRangeMax[miniGameCount.sub(1)] + 1;
 		} else {
-			roundTokenRangeMin[roundCount] = tokenSupply;
+			roundTokenRangeMin[roundCount] = 0;
 		}
 		//log max only when round is complete 
 		if (roundCount >= 2) {
-			roundTokenRangeMax[roundCount.sub(1)] = tokenSupply;
+			roundTokenRangeMax[roundCount.sub(1)] = miniGameTokenRangeMax[miniGameCount.sub(1)];
 			roundTokens[roundCount.sub(1)] = tokenSupply.sub(roundTokenRangeMin[roundCount.sub(1)]);
 		}
 	}
@@ -806,7 +804,7 @@ contract OneHundredthMonkey {
 
 	function awardRoundPrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-		uint256 currentRoundTokens = tokenSupply.sub(roundTokenRangeMin[roundCount]);
+		uint256 currentRoundTokens = miniGameTokenRangeMax[miniGameCount.sub(1)].sub(roundTokenRangeMin[roundCount]);
         uint256 winningNumber = uint256(hash).mod(currentRoundTokens);
         roundPrizeNumber[roundCount] = winningNumber + roundTokenRangeMin[roundCount];
         //calculate round prize here 
@@ -823,7 +821,7 @@ contract OneHundredthMonkey {
 
 	function awardCyclePrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-        uint256 winningNumber = uint256(hash).mod(tokenSupply);
+        uint256 winningNumber = uint256(hash).mod(roundTokenRangeMax[miniGamesPerCycle]);
         cyclePrizeWinningNumber = winningNumber;
         gameActive = false;
         cycleEnded = now;
@@ -849,9 +847,8 @@ contract OneHundredthMonkey {
 
 	//narrows down the token range of a round to a specific miniGame
 	//reduces the search space on user prize updates 
-	function narrowRoundPrize(uint256 _ID) public returns(uint256 _miniGameID) {
+	function narrowRoundPrize(uint256 _ID) internal returns(uint256 _miniGameID) {
 		//set up local accounting
-		uint256 winningNumber = roundPrizeNumber[_ID];
 		uint256 miniGameRangeMin; 
 		uint256 miniGameRangeMax;
 		if (_ID == 1) {
@@ -859,13 +856,13 @@ contract OneHundredthMonkey {
 			miniGameRangeMax = miniGamesPerRound;
 		} else if (_ID >= 2) {
 			miniGameRangeMin = _ID.mul(miniGamesPerRound);
-			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound;
+			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound - 1;
 		}	
 		//loop through each minigame to check prize number
 		//log globaly so this only needs to be called once per prize 
         for (uint256 i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
-            if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
-                roundPrizeInMinigame[_ID] = miniGameRangeMin + (i - 1);
+            if (roundPrizeNumber[_ID] >= miniGameTokenRangeMin[i] && roundPrizeNumber[_ID] <= miniGameTokenRangeMax[i]) {
+                roundPrizeInMinigame[_ID] = i;
                 roundPrizeTokenRangeIdentified[_ID] = true;
                 return roundPrizeInMinigame[_ID];
                 break;
@@ -876,11 +873,9 @@ contract OneHundredthMonkey {
 	//narrows down the token range of a round to a specific miniGame
 	//reduces the search space on user prize updates 
 	function narrowCyclePrize() internal returns(uint256 _miniGameID) {
-		//set up local accounting
-		uint256 winningNumber = cyclePrizeWinningNumber;
 		//first identify round 
         for (uint256 i = 1; i <= roundCount; i++) {
-            if (winningNumber >= roundTokenRangeMin[i] && winningNumber <= roundTokenRangeMax[i]) {
+            if (cyclePrizeWinningNumber >= roundTokenRangeMin[i] && cyclePrizeWinningNumber <= roundTokenRangeMax[i]) {
                 cyclePrizeInRound = i;
                 break;
             }
@@ -894,13 +889,13 @@ contract OneHundredthMonkey {
 			miniGameRangeMax = miniGamesPerRound;
 		} else if (_ID >= 2) {
 			miniGameRangeMin = _ID.mul(miniGamesPerRound);
-			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound;
+			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound - 1;
 		}	
 		//loop through each minigame to check prize number
 		//log globaly so this only needs to be called once per prize  
         for (i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
-            if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
-                cyclePrizeInMinigame = miniGameRangeMin + (i - 1);
+            if (cyclePrizeWinningNumber >= miniGameTokenRangeMin[i] && cyclePrizeWinningNumber <= miniGameTokenRangeMax[i]) {
+                cyclePrizeInMinigame = i;
                 cyclePrizeTokenRangeIdentified = true;
                 return cyclePrizeInMinigame;
                 break;
@@ -1015,13 +1010,13 @@ contract OneHundredthMonkey {
 			miniGameRangeMax = miniGamesPerRound;
 		} else if (_ID >= 2) {
 			miniGameRangeMin = _ID.mul(miniGamesPerRound);
-			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound;
+			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound - 1;
 		}	
 		//loop through each minigame to check prize number
 		//log globaly so this only needs to be called once per prize 
         for (uint256 i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
             if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
-                return miniGameRangeMin + (i - 1);
+                return i;
                 break;
             }
         }		
@@ -1048,13 +1043,13 @@ contract OneHundredthMonkey {
 			miniGameRangeMax = miniGamesPerRound;
 		} else if (_ID >= 2) {
 			miniGameRangeMin = _ID.mul(miniGamesPerRound);
-			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound;
+			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound - 1;
 		}	
 		//loop through each minigame to check prize number
 		//log globaly so this only needs to be called once per prize  
         for (i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
             if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
-                return miniGameRangeMin + (i - 1);
+                return i;
                 break;
             }
         }			

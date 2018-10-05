@@ -2,42 +2,40 @@
 //ONE HUNDREDTH MONKEY//
 ////////////////////////
 
-//2018.10.01 | draft for security audit
-
 pragma solidity ^0.4.25;
 
 library SafeMath {
 
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a == 0) {
-          return 0;
-        }
-        uint256 c = a * b;
-        require(c / a == b, "the SafeMath multiplication check failed");
-        return c;
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0) {
+    	return 0;
     }
+    uint256 c = a * b;
+    require(c / a == b, "the SafeMath multiplication check failed");
+    return c;
+  }
 
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    	require(b > 0, "the SafeMath division check failed");
-        uint256 c = a / b;
-        return c;
-    }
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+  	require(b > 0, "the SafeMath division check failed");
+    	uint256 c = a / b;
+      return c;
+  }
 
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        require(b <= a, "the SafeMath subtraction check failed");
-        return a - b;
-    }
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+      require(b <= a, "the SafeMath subtraction check failed");
+      return a - b;
+  }
 
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        require(c >= a, "the SafeMath addition check failed");
-        return c;
-    }
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+      uint256 c = a + b;
+      require(c >= a, "the SafeMath addition check failed");
+      return c;
+  }
 
-    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-	    require(b != 0, "the SafeMath modulo check failed");
-	    return a % b;
-	 }
+  function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+    require(b != 0, "the SafeMath modulo check failed");
+    return a % b;
+ }
 }
 
 contract OneHundredthMonkey {
@@ -76,9 +74,9 @@ contract OneHundredthMonkey {
 	
 	//RNG
 	uint256 internal RNGblockDelay = 1;
-    uint256 public salt = 0; //@dev change to internal after testing 
-    bytes32 public hashA; //@dev change to internal after testing 
-    bytes32 public hashB; //@dev change to internal after testing 
+	uint256 public salt = 0; //@dev change to internal after testing 
+	bytes32 public hashA; //@dev change to internal after testing 
+	bytes32 public hashB; //@dev change to internal after testing 
 
 	//MINIGAME TRACKING
 	bool public miniGameProcessing;
@@ -190,17 +188,17 @@ contract OneHundredthMonkey {
 	}
 
 	modifier onlyHumans() { 
-        require (msg.sender == tx.origin || msg.sender == adminBank, "only approved contracts allowed"); 
-        _; 
-    }
+	    require (msg.sender == tx.origin || msg.sender == adminBank, "only approved contracts allowed"); 
+	    _; 
+	  }
 
-    modifier gameOpen() {
-    	require (gameActive == true, "the game must be open");
-    	if (miniGameProcessing == true) {
-    		require (block.number > miniGameProcessingBegun + RNGblockDelay, "the round is still processing. try again soon");
-    	}
-    	_;
-    }
+	modifier gameOpen() {
+		require (gameActive == true, "the game must be open");
+	  	if (miniGameProcessing == true) {
+	  		require (block.number > miniGameProcessingBegun + RNGblockDelay, "the round is still processing. try again soon");
+	  	}
+	  	_;
+	}
     
     
     //////////
@@ -343,6 +341,7 @@ contract OneHundredthMonkey {
 	//can only be called once. can be restarted with restartMiniGame if 256 blocks pass
 	function earlyResolveA() external onlyAdmins() onlyHumans() gameOpen() {
 		require (now > miniGameStartTime[miniGameCount] + 604800 && miniGameProcessing == false, "earlyResolveA cannot be called yet"); //1 week
+		require (miniGamePrizePot[miniGameCount].sub(seedAreward).sub(seedBreward) >= 0);
 		
 		gameActive = false;
 		earlyResolveACalled = true;
@@ -371,13 +370,13 @@ contract OneHundredthMonkey {
 	//admins can close the contract no sooner than 90 days after a full cycle completes 
 	//users need to withdraw funds before this date or risk losing them
 	function zeroOut() external onlyAdmins() onlyHumans() {
-        require (now >= cycleEnded + 90 days && cycleOver == true, "too early to close the contract"); 
-        
-        uint256 balance = address(this).balance;
-        selfdestruct(adminBank);
+	    require (now >= cycleEnded + 90 days && cycleOver == true, "too early to close the contract"); 
+	    
+	  	//event emited before selfdestruct
+	    emit contractDestroyed(msg.sender, address(this).balance, "contract destroyed"); 
 
-        emit contractDestroyed(msg.sender, balance, "contract destroyed");
-    }
+	    selfdestruct(adminBank);
+	  }
 
 
 	//////////////////
@@ -402,13 +401,11 @@ contract OneHundredthMonkey {
 		require (_amount >= tokenPrice, "you must buy at least one token");
 
 		//take funds from user persistent storage and buy
-		uint256 remainingBalance = userBalance[msg.sender].sub(_amount);
-		userBalance[msg.sender] = remainingBalance;
+		userBalance[msg.sender] = userBalance[msg.sender].sub(_amount);
 		
 		buyInternal(_amount, _referral);
 
 		emit userReinvested(msg.sender, _amount, "a user reinvested");
-
 	}
 
 	function withdraw() external onlyHumans() {
@@ -433,63 +430,73 @@ contract OneHundredthMonkey {
 
 	//helper function to return contract balance 
 	function contractBalance() external view returns(uint256 _contractBalance) {
-        return address(this).balance;
-    }
+	    return address(this).balance;
+	}
 
-    //check for user divs available
-    function checkUserDivsAvailable(address _user) external view returns(uint256 _userDivsAvailable) {
-    	return userBalance[_user] + checkDivsMgView(_user) + checkDivsRndView(_user) + checkPrizesView(_user);
-    }
+	//check for user divs available
+	function checkUserDivsAvailable(address _user) external view returns(uint256 _userDivsAvailable) {
+		return userBalance[_user] + checkDivsMgView(_user) + checkDivsRndView(_user) + checkPrizesView(_user);
+	}
 
-    //user chance of winning minigame prize or airdrop
-    function userOddsMiniGame(address _user) external view returns(uint256) {
-    	//returns percentage precise to two decimal places (eg 1428 == 14.28% odds)
-    	return userMiniGameTokens[_user][miniGameCount].mul(10 ** 5).div(miniGameTokensActive[miniGameCount]).add(5).div(10);
-    }
+	//user chance of winning minigame prize or airdrop
+	function userOddsMiniGame(address _user) external view returns(uint256) {
+		//returns percentage precise to two decimal places (eg 1428 == 14.28% odds)
+		return userMiniGameTokens[_user][miniGameCount].mul(10 ** 5).div(miniGameTokensActive[miniGameCount]).add(5).div(10);
+	}
 
-    //user chance of winning round prize or airdrop
-    function userOddsRound(address _user) external view returns(uint256) {
-    	//returns percentage precise to two decimal places (eg 1428 == 14.28% odds)
-    	return userRoundTokens[_user][roundCount].mul(10 ** 5).div(roundTokensActive[roundCount]).add(5).div(10);
-    }
+	//user chance of winning round prize or airdrop
+	function userOddsRound(address _user) external view returns(uint256) {
+		//returns percentage precise to two decimal places (eg 1428 == 14.28% odds)
+		return userRoundTokens[_user][roundCount].mul(10 ** 5).div(roundTokensActive[roundCount]).add(5).div(10);
+	}
 
-    //user chance of winning cycle prize
-    function userOddsCycle(address _user) external view returns(uint256) {
-    	//returns percentage precise to two decimal places (eg 1428 == 14.28% odds)
-    	return userTokens[_user].mul(10 ** 5).div(cycleActiveTokens).add(5).div(10);
-    }
+	//user chance of winning cycle prize
+	function userOddsCycle(address _user) external view returns(uint256) {
+		//returns percentage precise to two decimal places (eg 1428 == 14.28% odds)
+		return userTokens[_user].mul(10 ** 5).div(cycleActiveTokens).add(5).div(10);
+	}
 
-    //cycle data	
-    function cycleInfo() external view returns(
-    	bool _cycleComplete,
-    	uint256 _currentRound,
-    	uint256 _currentMinigame,
-    	uint256 _tokenSupply,
-    	uint256 _progressivePot,
-    	bool _prizeClaimed,
-    	uint256 _winningNumber
-    	) {
-    	bool isActive;
-    	if (miniGameCount < 1000) {isActive = true;} else {isActive = false;}
-    	return (
-    		isActive,
-    		roundCount,
-    		miniGameCount,
-    		tokenSupply,
-    		cycleProgressivePot,
-    		cylcePrizeClaimed,
-    		cyclePrizeWinningNumber
-    	);
-    }
+	//cycle data	
+	function cycleInfo() external view returns(
+		bool _cycleComplete,
+		uint256 _currentRound,
+		uint256 _currentMinigame,
+		uint256 _tokenSupply,
+		uint256 _progressivePot,
+		bool _prizeClaimed,
+		uint256 _winningNumber
+		) {
+		bool isActive;
+		if (miniGameCount < 1000) {
+			isActive = true;
+			} else {
+				isActive = false;
+			}
+		
+		return (
+			isActive,
+			roundCount,
+			miniGameCount,
+			tokenSupply,
+			cycleProgressivePot,
+			cylcePrizeClaimed,
+			cyclePrizeWinningNumber
+		);
+	}
 
-    
-    //////////////////////
+
+	//////////////////////
 	//INTERNAL FUNCTIONS//
 	//////////////////////
 
 	function buyInternal(uint256 _amount, address _referral) internal {
 		require (_amount >= tokenPrice, "you must buy at least one token");
-		require (userMiniGameTokensMin[msg.sender][roundCount].length < 10, "you are buying too often in this round"); //sets up bounded loop 
+		require (userMiniGameTokensMin[msg.sender][miniGameCount].length < 10, "you are buying too often in this round"); //sets up bounded loop 
+
+		//update divs here to prevent overwriting userLastRoundInteractedWith
+		if (userLastRoundInteractedWith < roundCount || userLastMiniGameInteractedWith < miniGameCount) {
+			updateUserBalance(msg.sender);
+		}
 
 		//if this is the first tx after processing period is over, call generateSeedB
 		if (miniGameProcessing == true && block.number > miniGameProcessingBegun + RNGblockDelay) {
@@ -527,39 +534,36 @@ contract OneHundredthMonkey {
 
 		uint256 referralShare = (ethSpent.mul(referralRate)).div(100);
 		//check referral
-		if (_referral != 0x0000000000000000000000000000000000000000 && _referral != msg.sender) {
-           // assign refferal
-           userBalance[_referral] += referralShare;
-       	} else if (_referral == 0x0000000000000000000000000000000000000000 || _referral == msg.sender){
-       		//if no referral used, add to progessive pot 
-       		cycleProgressivePot += referralShare;
-       	}
+			if (_referral != 0x0000000000000000000000000000000000000000 && _referral != msg.sender) {
+	      // assign refferal
+	      userBalance[_referral] += referralShare;
+	   	} else if (_referral == 0x0000000000000000000000000000000000000000 || _referral == msg.sender){
+	   		//if no referral used, add to progessive pot 
+	   		cycleProgressivePot += referralShare;
+	   	}
 
 		//divide amount by various percentages and distribute
 		uint256 adminShare = (ethSpent.mul(adminFeeRate)).div(100);
-        adminBalance += adminShare;
+		adminBalance += adminShare;
 
-        uint256 mgDivs = (ethSpent.mul(miniGameDivRate)).div(100);
-        miniGameDivs[miniGameCount] += mgDivs;
+		uint256 mgDivs = (ethSpent.mul(miniGameDivRate)).div(100);
+		miniGameDivs[miniGameCount] += mgDivs;
 
-        uint256 roundDivShare = ethSpent.mul(roundDivRate).div(100);
-        roundDivs[roundCount] += roundDivShare;
+		uint256 roundDivShare = ethSpent.mul(roundDivRate).div(100);
+		roundDivs[roundCount] += roundDivShare;
 
-        uint256 miniGamePrize = ethSpent.mul(miniGamePotRate).div(100);
-        miniGamePrizePot[miniGameCount] += miniGamePrize;
+		uint256 miniGamePrize = ethSpent.mul(miniGamePotRate).div(100);
+		miniGamePrizePot[miniGameCount] += miniGamePrize;
 
-        uint256 miniGameAirdrop = ethSpent.mul(miniGameAirdropRate).div(100);
-        miniGameAirdropPot[miniGameCount] += miniGameAirdrop;
+		uint256 miniGameAirdrop = ethSpent.mul(miniGameAirdropRate).div(100);
+		miniGameAirdropPot[miniGameCount] += miniGameAirdrop;
 
-        uint256 cyclePot = ethSpent.mul(progressivePotRate).div(100);
-        cycleProgressivePot += cyclePot;
+		uint256 cyclePot = ethSpent.mul(progressivePotRate).div(100);
+		cycleProgressivePot += cyclePot;
 
-       	//update global token accounting 
-       	if (miniGameTokensLeft[miniGameCount] > 0) {
+     	//update global token accounting 
+     	if (miniGameTokensLeft[miniGameCount] > 0) {
 			miniGameTokensLeft[miniGameCount] = miniGameTokensLeft[miniGameCount].sub(tokensPurchased);
-			if (miniGameTokensLeft[miniGameCount] <= 0) {
-				miniGameTokensLeft[miniGameCount] = 0;
-			}
 		}
 		cycleActiveTokens += tokensPurchased;
 		roundTokensActive[roundCount] += tokensPurchased;
@@ -578,36 +582,36 @@ contract OneHundredthMonkey {
 
 		//calculate minigame divs 
 		userShareMiniGame[_user][_mg] = userMiniGameTokens[_user][_mg].mul(10 ** (precisionFactor + 1)).div(miniGameTokens[_mg] + 5).div(10);
-        userDivsMiniGameTotal[_user][_mg] = miniGameDivs[_mg].mul(userShareMiniGame[_user][_mg]).div(10 ** precisionFactor);
-        userDivsMiniGameUnclaimed[_user][_mg] = userDivsMiniGameTotal[_user][_mg].sub(userDivsMiniGameClaimed[_user][_mg]);
-        //add to user balance
-        if (userDivsMiniGameUnclaimed[_user][_mg] > 0) {
-            //sanity check
-            assert(userDivsMiniGameUnclaimed[_user][_mg] <= miniGameDivs[_mg]);
-            assert(userDivsMiniGameUnclaimed[_user][_mg] <= address(this).balance);
-            //update user accounting
-            userDivsMiniGameClaimed[_user][_mg] = userDivsMiniGameTotal[_user][_mg];
-            uint256 shareTempMg = userDivsMiniGameUnclaimed[_user][_mg];
-            userDivsMiniGameUnclaimed[_user][_mg] = 0;
-	        userBalance[_user] += shareTempMg;
-	        miniGameDivsClaimed[_mg] += shareTempMg;
-        }
-        //calculate round divs 
+	    userDivsMiniGameTotal[_user][_mg] = miniGameDivs[_mg].mul(userShareMiniGame[_user][_mg]).div(10 ** precisionFactor);
+	    userDivsMiniGameUnclaimed[_user][_mg] = userDivsMiniGameTotal[_user][_mg].sub(userDivsMiniGameClaimed[_user][_mg]);
+	    //add to user balance
+	    if (userDivsMiniGameUnclaimed[_user][_mg] > 0) {
+			//sanity check
+			assert(userDivsMiniGameUnclaimed[_user][_mg] <= miniGameDivs[_mg]);
+			assert(userDivsMiniGameUnclaimed[_user][_mg] <= address(this).balance);
+			//update user accounting
+			userDivsMiniGameUnclaimedameClaimed[_user][_mg] = userDivsMiniGameTotal[_user][_mg];
+			uint256 shareTempMg = userDivsMiniGameUnclaimed[_user][_mg];
+			userDivsMiniGameUnclaimed[_user][_mg] = 0;
+			userBalance[_user] += shareTempMg;
+			miniGameDivsClaimed[_mg] += shareTempMg;
+		    }
+	    //calculate round divs 
 		userShareRound[_user][_rnd] = userRoundTokens[_user][_rnd].mul(10 ** (precisionFactor + 1)).div(roundTokensActive[_rnd] + 5).div(10);
-        userDivsRoundTotal[_user][_rnd] = roundDivs[_rnd].mul(userShareRound[_user][_rnd]).div(10 ** precisionFactor);
-        userDivsRoundUnclaimed[_user][_rnd] = userDivsRoundTotal[_user][_rnd].sub(userDivsRoundClaimed[_user][_rnd]);
-        //add to user balance
-        if (userDivsRoundUnclaimed[_user][_rnd] > 0) {
-            //sanity check
-            assert(userDivsRoundUnclaimed[_user][_rnd] <= roundDivs[_rnd]);
-            assert(userDivsRoundUnclaimed[_user][_rnd] <= address(this).balance);
-            //update user accounting
-            userDivsRoundClaimed[_user][_rnd] = userDivsRoundTotal[_user][_rnd];
-            uint256 shareTempRnd = userDivsRoundUnclaimed[_user][_rnd];
-            userDivsRoundUnclaimed[_user][_rnd] = 0;
-	        userBalance[_user] += shareTempRnd;
-	        roundDivsClaimed[_rnd] += shareTempRnd;
-        }	
+	    userDivsRoundTotal[_user][_rnd] = roundDivs[_rnd].mul(userShareRound[_user][_rnd]).div(10 ** precisionFactor);
+	    userDivsRoundUnclaimed[_user][_rnd] = userDivsRoundTotal[_user][_rnd].sub(userDivsRoundClaimed[_user][_rnd]);
+	    //add to user balance
+	    if (userDivsRoundUnclaimed[_user][_rnd] > 0) {
+			//sanity check
+			assert(userDivsRoundUnclaimed[_user][_rnd] <= roundDivs[_rnd]);
+			assert(userDivsRoundUnclaimed[_user][_rnd] <= address(this).balance);
+			//update user accounting
+			userDivsRoundClaimed[_user][_rnd] = userDivsRoundTotal[_user][_rnd];
+			uint256 shareTempRnd = userDivsRoundUnclaimed[_user][_rnd];
+			userDivsRoundUnclaimed[_user][_rnd] = 0;
+			userBalance[_user] += shareTempRnd;
+			roundDivsClaimed[_rnd] += shareTempRnd;
+	    }	
 	}
 
 	function checkPrizes(address _user) internal {
@@ -617,16 +621,16 @@ contract OneHundredthMonkey {
 			uint256 mg = cyclePrizeInMinigame;
 			//check if user won cycle prize 
 			if (cylcePrizeClaimed == false && userMiniGameTokensMax[_user][mg].length > 0) {
-			//check if user won minigame 
-			//loop iterations bounded to a max of 10 on buy()
-    			for (uint256 i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
-    				if (cyclePrizeWinningNumber >= userMiniGameTokensMin[_user][mg][i] && cyclePrizeWinningNumber <= userMiniGameTokensMax[_user][mg][i]) {
-    					userBalance[_user] += cycleProgressivePot;
-    					cylcePrizeClaimed = true;
+				//check if user won minigame 
+				//loop iterations bounded to a max of 10 on buy()
+	  			for (uint256 i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
+	  				if (cyclePrizeWinningNumber >= userMiniGameTokensMin[_user][mg][i] && cyclePrizeWinningNumber <= userMiniGameTokensMax[_user][mg][i]) {
+	  					userBalance[_user] += cycleProgressivePot;
+	  					cylcePrizeClaimed = true;
 						cyclePrizeWinner = msg.sender;				
-    					break;
-    				}
-    			}
+	  					break;
+	  				}
+	  			}
 			}
 			userCycleChecked[_user] = true;
 		}
@@ -704,7 +708,6 @@ contract OneHundredthMonkey {
 		//award prize if cycle is complete 
 		if (miniGameCount % (miniGamesPerCycle + 1) == 0 && miniGameCount > 1) {
 			awardCyclePrize();
-			gameActive = false;
 		}
 
 		emit newMinigameStarted(miniGameCount, miniGameTokens[miniGameCount], "new minigame started");
@@ -738,7 +741,7 @@ contract OneHundredthMonkey {
 	function generateTokens() internal returns(uint256 _tokens) {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
 		uint256 randTokens = uint256(hash).mod(minTokensPerMiniGame);
-        uint256 newMinGameTokens = randTokens + minTokensPerMiniGame;
+    	uint256 newMinGameTokens = randTokens + minTokensPerMiniGame;
 		tokenSupply += newMinGameTokens;
 		salt++;
 
@@ -791,49 +794,50 @@ contract OneHundredthMonkey {
 
 	function awardMiniGamePrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-        uint256 winningNumber = uint256(hash).mod(miniGameTokens[miniGameCount]);
-        miniGamePrizeNumber[miniGameCount] = winningNumber + miniGameTokenRangeMin[miniGameCount];
-        miniGamePrizePot[miniGameCount] = miniGamePrizePot[miniGameCount].sub(seedAreward).sub(seedBreward);
-        salt++;
+	    uint256 winningNumber = uint256(hash).mod(miniGameTokens[miniGameCount].sub(miniGameTokensLeft[miniGameCount]));
+	    miniGamePrizeNumber[miniGameCount] = winningNumber + miniGameTokenRangeMin[miniGameCount];
+	    miniGamePrizePot[miniGameCount] = miniGamePrizePot[miniGameCount].sub(seedAreward).sub(seedBreward);
+	    salt++;
 
-        emit miniGamePrizeAwarded(miniGameCount, winningNumber, miniGamePrizePot[miniGameCount], "minigame prize awarded");
+	    emit miniGamePrizeAwarded(miniGameCount, winningNumber, miniGamePrizePot[miniGameCount], "minigame prize awarded");
 	}
 
 	function awardMiniGameAirdrop() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-        uint256 winningNumber = uint256(hash).mod(miniGameTokens[miniGameCount]);
-        miniGameAirdropNumber[miniGameCount] = winningNumber + miniGameTokenRangeMin[miniGameCount];
-        salt++;
+	    uint256 winningNumber = uint256(hash).mod(miniGameTokens[miniGameCount].sub(miniGameTokensLeft[miniGameCount]));
+	    miniGameAirdropNumber[miniGameCount] = winningNumber + miniGameTokenRangeMin[miniGameCount];
+	    salt++;
 
-        emit miniGameAirdropAwarded(miniGameCount, winningNumber, miniGameAirdropPot[miniGameCount], "minigame airdrop awarded");
+	    emit miniGameAirdropAwarded(miniGameCount, winningNumber, miniGameAirdropPot[miniGameCount], "minigame airdrop awarded");
 	}
 
 	function awardRoundPrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
+		//@dev ensure this dymanic
 		uint256 currentRoundTokens = miniGameTokenRangeMax[miniGameCount.sub(1)].sub(roundTokenRangeMin[roundCount]);
-        uint256 winningNumber = uint256(hash).mod(currentRoundTokens);
-        roundPrizeNumber[roundCount] = winningNumber + roundTokenRangeMin[roundCount];
-        //calculate round prize here 
-        uint256 roundPrize = cycleProgressivePot.mul(roundPotRate).div(100);
-		uint256 adminShare = cycleProgressivePot.mul(4).div(100);
-		adminBalance += adminShare;
-        roundPrizePot[roundCount] = roundPrize;
-        cycleProgressivePot = roundPrize;
-        narrowRoundPrize(roundCount);
-        salt++;
+	    uint256 winningNumber = uint256(hash).mod(currentRoundTokens);
+	    roundPrizeNumber[roundCount] = winningNumber + roundTokenRangeMin[roundCount];
+	    //calculate round prize here 
+	    uint256 roundPrize = cycleProgressivePot.mul(roundPotRate).div(100);
+			uint256 adminShare = cycleProgressivePot.mul(4).div(100);
+			adminBalance += adminShare;
+	    roundPrizePot[roundCount] = roundPrize;
+	    cycleProgressivePot = roundPrize;
+	    narrowRoundPrize(roundCount);
+	    salt++;
 
 		emit roundPrizeAwarded(roundCount, winningNumber, roundPrize, "round prize awarded");
 	}
 
 	function awardCyclePrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-        uint256 winningNumber = uint256(hash).mod(roundTokenRangeMax[miniGamesPerCycle]);
-        cyclePrizeWinningNumber = winningNumber;
-        gameActive = false;
-        cycleEnded = now;
-        cycleOver = true;
-        narrowCyclePrize();
-        salt++;
+	    uint256 winningNumber = uint256(hash).mod(miniGameTokenRangeMax[miniGameCount - 1]);
+	    cyclePrizeWinningNumber = winningNumber;
+	    gameActive = false;
+	    cycleEnded = now;
+	    cycleOver = true;
+	    narrowCyclePrize();
+	    salt++;
 
 		emit cyclePrizeAwarded(winningNumber, cycleProgressivePot, "cycle prize awarded");
 	}
@@ -866,28 +870,28 @@ contract OneHundredthMonkey {
 		}	
 		//loop through each minigame to check prize number
 		//log globaly so this only needs to be called once per prize 
-        for (uint256 i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
-            if (roundPrizeNumber[_ID] >= miniGameTokenRangeMin[i] && roundPrizeNumber[_ID] <= miniGameTokenRangeMax[i]) {
-                roundPrizeInMinigame[_ID] = i;
-                roundPrizeTokenRangeIdentified[_ID] = true;
-                return roundPrizeInMinigame[_ID];
-                break;
-            }
-        }	
+	    for (uint256 i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
+		    if (roundPrizeNumber[_ID] >= miniGameTokenRangeMin[i] && roundPrizeNumber[_ID] <= miniGameTokenRangeMax[i]) {
+	        roundPrizeInMinigame[_ID] = i;
+	        roundPrizeTokenRangeIdentified[_ID] = true;
+	        return roundPrizeInMinigame[_ID];
+	        break;
+		    }
+	    }	
 	}
 
 	//narrows down the token range of a round to a specific miniGame
 	//reduces the search space on user prize updates 
 	function narrowCyclePrize() internal returns(uint256 _miniGameID) {
 		//first identify round 
-        for (uint256 i = 1; i <= roundCount; i++) {
-            if (cyclePrizeWinningNumber >= roundTokenRangeMin[i] && cyclePrizeWinningNumber <= roundTokenRangeMax[i]) {
-                cyclePrizeInRound = i;
-                break;
-            }
-        }
-        //set up minigame local accounting 
-        uint256 miniGameRangeMin; 
+	    for (uint256 i = 1; i <= roundCount; i++) {
+	      if (cyclePrizeWinningNumber >= roundTokenRangeMin[i] && cyclePrizeWinningNumber <= roundTokenRangeMax[i]) {
+	        cyclePrizeInRound = i;
+	        break;
+	      }
+	    }
+	    //set up minigame local accounting 
+	    uint256 miniGameRangeMin; 
 		uint256 miniGameRangeMax;
 		uint256 _ID = cyclePrizeInRound;
 		if (_ID == 1) {
@@ -899,14 +903,14 @@ contract OneHundredthMonkey {
 		}	
 		//loop through each minigame to check prize number
 		//log globaly so this only needs to be called once per prize  
-        for (i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
-            if (cyclePrizeWinningNumber >= miniGameTokenRangeMin[i] && cyclePrizeWinningNumber <= miniGameTokenRangeMax[i]) {
-                cyclePrizeInMinigame = i;
-                cyclePrizeTokenRangeIdentified = true;
-                return cyclePrizeInMinigame;
-                break;
-            }
-        }	
+	    for (i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
+			if (cyclePrizeWinningNumber >= miniGameTokenRangeMin[i] && cyclePrizeWinningNumber <= miniGameTokenRangeMax[i]) {
+				cyclePrizeInMinigame = i;
+				cyclePrizeTokenRangeIdentified = true;
+				return cyclePrizeInMinigame;
+				break;
+			}
+	    }	
 	}
 
 	//helper function for up to date front end balances without state change
@@ -918,10 +922,10 @@ contract OneHundredthMonkey {
 		uint256 mgUnclaimed = userDivsMiniGameUnclaimed[_user][_mg];
 		//calculate minigame divs 
 		mgShare = userMiniGameTokens[_user][_mg].mul(10 ** (precisionFactor + 1)).div(miniGameTokens[_mg] + 5).div(10);
-        mgTotal = miniGameDivs[_mg].mul(mgShare).div(10 ** precisionFactor);
-        mgUnclaimed = mgTotal.sub(userDivsMiniGameClaimed[_user][_mg]);
+	    mgTotal = miniGameDivs[_mg].mul(mgShare).div(10 ** precisionFactor);
+	    mgUnclaimed = mgTotal.sub(userDivsMiniGameClaimed[_user][_mg]);
 
-        return mgUnclaimed;
+	    return mgUnclaimed;
 	}
 	
 	//helper function for up to date front end balances without state change
@@ -933,10 +937,10 @@ contract OneHundredthMonkey {
 		uint256 rndUnclaimed = userDivsRoundUnclaimed[_user][_rnd];
         //calculate round divs 
 		rndShare = userRoundTokens[_user][_rnd].mul(10 ** (precisionFactor + 1)).div(roundTokensActive[_rnd] + 5).div(10);
-        rndTotal = roundDivs[_rnd].mul(rndShare).div(10 ** precisionFactor);
-        rndUnclaimed = rndTotal.sub(userDivsRoundClaimed[_user][_rnd]);
+	    rndTotal = roundDivs[_rnd].mul(rndShare).div(10 ** precisionFactor);
+	    rndUnclaimed = rndTotal.sub(userDivsRoundClaimed[_user][_rnd]);
 
-        return rndUnclaimed;
+	    return rndUnclaimed;
 	}
 
 	//helper function for up to date front end balances without state change
@@ -955,14 +959,14 @@ contract OneHundredthMonkey {
 			}
 			//check if user won cycle prize 
 			if (cylcePrizeClaimed == false && userMiniGameTokensMax[_user][mg].length > 0) {
-			//check if user won minigame 
-			//loop iterations bounded to a max of 10 on buy()
-    			for (uint256 i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
-    				if (cyclePrizeWinningNumber >= userMiniGameTokensMin[_user][mg][i] && cyclePrizeWinningNumber <= userMiniGameTokensMax[_user][mg][i]) {
-    					prizeValue += cycleProgressivePot;			
-    					break;
-    				}
-    			}
+				//check if user won minigame 
+				//loop iterations bounded to a max of 10 on buy()
+				for (uint256 i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
+					if (cyclePrizeWinningNumber >= userMiniGameTokensMin[_user][mg][i] && cyclePrizeWinningNumber <= userMiniGameTokensMax[_user][mg][i]) {
+						prizeValue += cycleProgressivePot;			
+						break;
+					}
+				}
 			}
 		}
 		//push round prizes to persistent storage
@@ -1020,12 +1024,12 @@ contract OneHundredthMonkey {
 		}	
 		//loop through each minigame to check prize number
 		//log globaly so this only needs to be called once per prize 
-        for (uint256 i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
-            if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
-                return i;
-                break;
-            }
-        }		
+	    for (uint256 i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
+			if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
+				return i;
+				break;
+			}
+	    }		
 	}
 
 	//helper function for up to date front end balances without state change
@@ -1034,30 +1038,30 @@ contract OneHundredthMonkey {
 		uint256 winningNumber = cyclePrizeWinningNumber;
 		uint256 rnd;
 		//first identify round 
-        for (uint256 i = 1; i <= roundCount; i++) {
-            if (winningNumber >= roundTokenRangeMin[i] && winningNumber <= roundTokenRangeMax[i]) {
-                rnd = i;
-                break;
-            }
-        }
-        //set up minigame local accounting 
-        uint256 miniGameRangeMin; 
-		uint256 miniGameRangeMax;
-		uint256 _ID = rnd;
-		if (_ID == 1) {
-			miniGameRangeMin = 1;
-			miniGameRangeMax = miniGamesPerRound;
-		} else if (_ID >= 2) {
-			miniGameRangeMin = _ID.mul(miniGamesPerRound);
-			miniGameRangeMax = miniGameRangeMin + miniGamesPerRound - 1;
-		}	
-		//loop through each minigame to check prize number
-		//log globaly so this only needs to be called once per prize  
-        for (i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
-            if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
-                return i;
-                break;
-            }
-        }			
+	    for (uint256 i = 1; i <= roundCount; i++) {
+			if (winningNumber >= roundTokenRangeMin[i] && winningNumber <= roundTokenRangeMax[i]) {
+				rnd = i;
+				break;
+			}
+	    }
+	    //set up minigame local accounting 
+	    uint256 miniGameRangeMin; 
+			uint256 miniGameRangeMax;
+			uint256 _ID = rnd;
+			if (_ID == 1) {
+				miniGameRangeMin = 1;
+				miniGameRangeMax = miniGamesPerRound;
+			} else if (_ID >= 2) {
+				miniGameRangeMin = _ID.mul(miniGamesPerRound);
+				miniGameRangeMax = miniGameRangeMin + miniGamesPerRound - 1;
+			}	
+			//loop through each minigame to check prize number
+			//log globaly so this only needs to be called once per prize  
+	    for (i = miniGameRangeMin; i <= miniGameRangeMax; i++) {
+			if (winningNumber >= miniGameTokenRangeMin[i] && winningNumber <= miniGameTokenRangeMax[i]) {
+				return i;
+				break;
+			}
+	    }			
 	}
 }

@@ -489,7 +489,7 @@ contract OneHundredthMonkey {
 
 		return (
 			roundCount,
-			roundPrizePot[roundCount],
+			cycleProgressivePot / 2,
 			roundStartTime[roundCount]
 		);
 	}

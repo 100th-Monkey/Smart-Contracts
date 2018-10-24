@@ -498,6 +498,7 @@ contract OneHundredthMonkey {
 	function contractInfo() external view returns(
 		uint256 _balance,
 		uint256 _volume,
+		uint256 _totalBuys,
 		uint256 _totalUsers,
 		uint256 _tokenSupply,
 		uint256 _tokenPrice
@@ -508,6 +509,7 @@ contract OneHundredthMonkey {
 			totalVolume,
 			totalBuys,
 			uniqueAddress.length,
+			tokenSupply,
 			tokenPrice
 		);
 	}

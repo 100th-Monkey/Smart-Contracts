@@ -494,7 +494,7 @@ contract OneHundredthMonkey {
 		require (userMiniGameTokensMin[msg.sender][miniGameCount].length < 10, "you are buying too often in this round"); //sets up bounded loop 
 
 		//update divs here to prevent overwriting userLastRoundInteractedWith
-		if (userLastRoundInteractedWith < roundCount || userLastMiniGameInteractedWith < miniGameCount) {
+		if (userLastRoundInteractedWith[msg.sender] < roundCount || userLastMiniGameInteractedWith[msg.sender] < miniGameCount) {
 			updateUserBalance(msg.sender);
 		}
 
@@ -590,7 +590,7 @@ contract OneHundredthMonkey {
 			assert(userDivsMiniGameUnclaimed[_user][_mg] <= miniGameDivs[_mg]);
 			assert(userDivsMiniGameUnclaimed[_user][_mg] <= address(this).balance);
 			//update user accounting
-			userDivsMiniGameUnclaimedameClaimed[_user][_mg] = userDivsMiniGameTotal[_user][_mg];
+			userDivsMiniGameClaimed[_user][_mg] = userDivsMiniGameTotal[_user][_mg];
 			uint256 shareTempMg = userDivsMiniGameUnclaimed[_user][_mg];
 			userDivsMiniGameUnclaimed[_user][_mg] = 0;
 			userBalance[_user] += shareTempMg;

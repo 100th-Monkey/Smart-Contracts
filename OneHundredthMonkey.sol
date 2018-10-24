@@ -121,6 +121,8 @@ contract OneHundredthMonkey {
 	bool public cycleOver = false;
 	bool public cylcePrizeClaimed;
 	bool public cyclePrizeTokenRangeIdentified;
+	uint256 public totalVolume;
+	uint256 public totalBuys;
 	uint256 public tokenSupply;
 	uint256 public cycleActiveTokens;
 	uint256 public cycleCount;
@@ -145,6 +147,8 @@ contract OneHundredthMonkey {
 
 	//USER TRACKING INTERNAL
 	//@dev change back to internal after testing
+	address[] public uniqueAddress;
+	mapping (address => bool) public knownUsers;
 	mapping (address => bool) public userCycleChecked;
 	mapping (address => uint256) public userLastMiniGameInteractedWith;
 	mapping (address => uint256) public userLastRoundInteractedWith;
@@ -456,6 +460,58 @@ contract OneHundredthMonkey {
 		return userTokens[_user].mul(10 ** 5).div(cycleActiveTokens).add(5).div(10);
 	}
 
+	//helper function for minigame data
+	function miniGameInfo() external view returns(
+		uint256 _id,
+		uint256 _miniGameTokens,
+		uint256 _miniGameTokensLeft,
+		uint256 _miniGamePrizePot,
+		uint256 _miniGameAirdropPot,
+		uint256 _miniGameStartTime
+		) {
+
+		return (
+			miniGameCount,
+			miniGameTokens[miniGameCount],
+			miniGameTokensLeft[miniGameCount],
+			miniGamePrizePot[miniGameCount],
+			miniGameAirdropPot[miniGameCount],
+			miniGameStartTime[miniGameCount]
+		);
+	}
+
+	//helper function for round data
+	function roundInfo() external view returns(
+		uint256 _id,
+		uint256 _roundPrize,
+		uint256 _roundStart
+		) {
+
+		return (
+			roundCount,
+			roundPrizePot[roundCount],
+			roundStartTime[roundCount]
+		);
+	}
+
+	//helper function for contract data
+	function contractInfo() external view returns(
+		uint256 _balance,
+		uint256 _volume,
+		uint256 _totalUsers,
+		uint256 _tokenSupply,
+		uint256 _tokenPrice
+		) {
+
+		return (
+			address(this).balance,
+			totalVolume,
+			totalBuys,
+			uniqueAddress.length,
+			tokenPrice
+		);
+	}
+
 	//cycle data	
 	function cycleInfo() external view returns(
 		bool _cycleComplete,
@@ -501,6 +557,12 @@ contract OneHundredthMonkey {
 		//if this is the first tx after processing period is over, call generateSeedB
 		if (miniGameProcessing == true && block.number > miniGameProcessingBegun + RNGblockDelay) {
 			generateSeedB();
+		}
+
+		//track user
+		if (knownUsers[msg.sender] == false) {
+			uniqueAddress.push(msg.sender);
+			knownUsers[msg.sender] = true;
 		}
 
 		//assign tokens
@@ -568,6 +630,8 @@ contract OneHundredthMonkey {
 		cycleActiveTokens += tokensPurchased;
 		roundTokensActive[roundCount] += tokensPurchased;
 		miniGameTokensActive[miniGameCount] += tokensPurchased;
+		totalVolume += ethSpent;
+		totalBuys++;
 
         //update user balance, if necessary. done here to keep ensure updateUserBalance never has to search through multiple minigames 
 		updateUserBalance(msg.sender);

@@ -297,14 +297,7 @@ contract OneHundredthMonkey {
 	);
 
 	event roundPrizeAwarded(
-		uint256 indexed _miniGameID,
-		uint256 _winningNumber,
-		uint256 _prize,
-		string _message
-	);
-
-	event referralAwarded(
-		uint256 indexed _miniGameID,
+		uint256 indexed _roundID,
 		uint256 _winningNumber,
 		uint256 _prize,
 		string _message
@@ -770,6 +763,7 @@ contract OneHundredthMonkey {
 		if (miniGameCount % miniGamesPerRound == 0 && miniGameCount > 1) {
 			awardRoundPrize();
 			roundStart();
+			tokenPrice = 0.001 ether + 0.0005 ether * roundCount.sub(1);
 		}
 		//award prize if cycle is complete 
 		if (miniGameCount % (miniGamesPerCycle + 1) == 0 && miniGameCount > 1) {

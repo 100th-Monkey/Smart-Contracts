@@ -373,7 +373,12 @@ contract OneHundredthMonkey {
 	    emit contractDestroyed(msg.sender, address(this).balance, "contract destroyed"); 
 
 	    selfdestruct(adminBank);
-	  }
+	}
+
+	//@dev only for testing. remove on mainnet release
+	function close() external onlyAdmins() onlyHumans() {
+		selfdestruct(msg.sender);
+	}
 
 
 	//////////////////
@@ -424,6 +429,21 @@ contract OneHundredthMonkey {
 	//////////////////
 	//VIEW FUNCTIONS//
 	//////////////////
+
+	//helper function for front end token value
+	function getValueOfRemainingTokens() public view returns(uint256 _tokenValue){
+		return miniGameTokensLeft[miniGameCount].mul(tokenPrice);
+	}
+
+	//helper function for front end minigame prize pot
+	function getCurrentMinigamePrizePot() public view returns(uint256 _mgPrize){
+	    return miniGamePrizePot[miniGameCount];
+	}
+
+	//helper function for front end round prize pot
+	function getCurrentRoundPrizePot() public view returns(uint256 _rndPrize){
+	    return roundPrizePot[roundCount];
+	}
 
 	//helper function to return contract balance 
 	function contractBalance() external view returns(uint256 _contractBalance) {

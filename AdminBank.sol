@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 //LIBRARIES
 
@@ -39,10 +39,7 @@ library SafeMath {
 //CONTRACT INTERFACE
 
 contract OneHundredthMonkey {
- 	
- 	function checkAdminBalance() public {}
- 	function adminWithdraw() public {}
- 	
+ 	function adminWithdraw() public {}	
 }
 
 //MAIN CONTRACT
@@ -118,7 +115,7 @@ contract AdminBank {
 	//FUNCTIONS
 
 	//add main contract address 
-	function setContractAddress(address _address) public onlyHumans() {
+	function setContractAddress(address _address) external onlyHumans() {
 		require (msg.sender == masterAdmin);
 		require (mainContractSet == false);
 		mainContract = _address;
@@ -126,19 +123,13 @@ contract AdminBank {
 	}
 
 	//withdrawProxy
-	function withdrawProxy() public isTeamMember() isMainContractSet() onlyHumans() {
-		OneHundredthMonkey ohm = OneHundredthMonkey(mainContract);
-		ohm.adminWithdraw();
-	}
-
-	//balanceCheckPrize
-	function balanceProxy() public isTeamMember() isMainContractSet() onlyHumans() {
-		OneHundredthMonkey ohm = OneHundredthMonkey(mainContract);
-		ohm.checkAdminBalance();
+	function withdrawProxy() external isTeamMember() isMainContractSet() onlyHumans() {
+		OneHundredthMonkey o = OneHundredthMonkey(mainContract);
+		o.adminWithdraw();
 	}
 
 	//team member withdraw
-	function teamWithdraw() public isTeamMember() isMainContractSet() onlyHumans() {
+	function teamWithdraw() external isTeamMember() isMainContractSet() onlyHumans() {
 	
 		//set up for msg.sender
 		address user;
@@ -176,18 +167,20 @@ contract AdminBank {
 	function balanceOf(address _user) public view returns(uint256 _balance) {
 		address user;
 		uint256 rate;
-		if (msg.sender == teamMemberA) {
+		if (_user == teamMemberA) {
 			user = teamMemberA;
 			rate = teamMemberArate;
-		} else if (msg.sender == teamMemberB) {
+		} else if (_user == teamMemberB) {
 			user = teamMemberB;
 			rate = teamMemberBrate;
-		} else if (msg.sender == teamMemberC) {
+		} else if (_user == teamMemberC) {
 			user = teamMemberC;
 			rate = teamMemberCrate;
-		} else if (msg.sender == teamMemberD) {
+		} else if (_user == teamMemberD) {
 			user = teamMemberD;
 			rate = teamMemberDrate;
+		} else {
+			return 0;
 		}
 
 		uint256 teamMemberShare = fundsReceived.mul(rate).div(100);

@@ -4,5 +4,5 @@ Smart contracts:
 
 - **OneHundredthMonkey.sol**: core game logic
 - **AdminBank.sol**: trustless management of admin fees for various team members
-- **FoundationFund.sol**: function TDB 
+- **FoundationFund.sol**: trustless management of percentage from pot wins (same functionality as AdminBank.sol but managed separately)
 - **ICO.sol**: token contract function TDB

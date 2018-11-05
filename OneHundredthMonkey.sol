@@ -48,7 +48,9 @@ contract OneHundredthMonkey {
 
 	//ADMIN
 	uint256 public adminBalance;
+	uint256 public foundationBalance;
 	address public adminBank;
+	address public foundationFund;
 	address[] public admins;
 	mapping (address => bool) public isAdmin;
 
@@ -170,9 +172,10 @@ contract OneHundredthMonkey {
 	//CONSTRUCTOR//
 	///////////////
 
-	constructor(address _adminBank, address _adminTwo, address _adminThree) public {
+	constructor(address _adminBank, address _foundationFund, address _adminTwo, address _adminThree) public {
 		//set dev bank address and admins
 		adminBank = _adminBank;
+		foundationFund = _foundationFund;
 		admins.push(msg.sender);
 		isAdmin[msg.sender] = true;
 		admins.push(_adminTwo);
@@ -192,7 +195,7 @@ contract OneHundredthMonkey {
 	}
 
 	modifier onlyHumans() { 
-	    require (msg.sender == tx.origin || msg.sender == adminBank, "only approved contracts allowed"); 
+	    require (msg.sender == tx.origin, "only approved contracts allowed"); 
 	    _; 
 	  }
 
@@ -314,12 +317,24 @@ contract OneHundredthMonkey {
 	//ADMIN FUNCTIONS//
 	///////////////////
 
-	function adminWithdraw() external onlyAdmins() onlyHumans(){
+	function adminWithdraw() external {
+		require (isAdmin[msg.sender] == true || msg.sender == adminBank);
+		require (adminBalance > 0, "there must be a balance");
 		uint256 balance = adminBalance;
 		adminBalance = 0;
-		adminBank.transfer(balance);
+		adminBank.call.value(balance).gas(100000)();
 
 		emit adminWithdrew(balance, msg.sender, "an admin just withdrew");
+	}
+
+	function foundationWithdraw() external {
+		require (isAdmin[msg.sender] == true || msg.sender == foundationFund);
+		require (adminBalance > 0, "there must be a balance");
+		uint256 balance = foundationBalance;
+		foundationBalance = 0;
+		foundationFund.call.value(balance).gas(100000)();
+
+		emit adminWithdrew(balance, msg.sender, "an admin just withdrew to the foundation fund");
 	}
 
 	function startCycle() external onlyAdmins() onlyHumans() {
@@ -372,7 +387,7 @@ contract OneHundredthMonkey {
 	  	//event emited before selfdestruct
 	    emit contractDestroyed(msg.sender, address(this).balance, "contract destroyed"); 
 
-	    selfdestruct(adminBank);
+	    selfdestruct(foundationFund);
 	}
 
 	//@dev only for testing. remove on mainnet release
@@ -899,8 +914,8 @@ contract OneHundredthMonkey {
 	    roundPrizeNumber[roundCount] = winningNumber + roundTokenRangeMin[roundCount];
 	    //calculate round prize here 
 	    uint256 roundPrize = cycleProgressivePot.mul(roundPotRate).div(100);
-			uint256 adminShare = cycleProgressivePot.mul(4).div(100);
-			adminBalance += adminShare;
+		uint256 adminShare = cycleProgressivePot.mul(4).div(100);
+		foundationBalance += adminShare;
 	    roundPrizePot[roundCount] = roundPrize;
 	    cycleProgressivePot = roundPrize;
 	    narrowRoundPrize(roundCount);

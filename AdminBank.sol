@@ -209,7 +209,7 @@ contract AdminBank {
 
 	function proposeNewAddress(address _new) external isTeamMember() onlyHumans() {
 		require (isProposedAddress[_new] == false, "this address cannot be proposed more than once");
-		require (isProposing[msg.sender] == false, "you can only propose one address at a time")
+		require (isProposing[msg.sender] == false, "you can only propose one address at a time");
 
 		isProposing[msg.sender] = true;
 		isProposedAddress[_new] = true;
@@ -283,49 +283,49 @@ contract AdminBank {
 			teamMemberA = msg.sender;
 			validTeamMember[teamMemberA] = true;
 		} else if (proposingAddressIndex[msg.sender] == 1) {
-			address old = teamMemberB;
+			old = teamMemberB;
 			validTeamMember[old] = false;
 			isProposing[old] = false;
 			teamMemberB = msg.sender;
 			validTeamMember[teamMemberB] = true;
 		} else if (proposingAddressIndex[msg.sender] == 2) {
-			address old = teamMemberC;
+			old = teamMemberC;
 			validTeamMember[old] = false;
 			isProposing[old] = false;
 			teamMemberC = msg.sender;
 			validTeamMember[teamMemberC] = true;
 		} else if (proposingAddressIndex[msg.sender] == 3) {
-			address old = teamMemberD;
+			old = teamMemberD;
 			validTeamMember[old] = false;
 			isProposing[old] = false;
 			teamMemberD = msg.sender;
 			validTeamMember[teamMemberD] = true;
 		} else if (proposingAddressIndex[msg.sender] == 4) {
-			address old = teamMemberE;
+			old = teamMemberE;
 			validTeamMember[old] = false;
 			isProposing[old] = false;
 			teamMemberE = msg.sender;
 			validTeamMember[teamMemberE] = true;
 		} else if (proposingAddressIndex[msg.sender] == 5) {
-			address old = teamMemberF;
+			old = teamMemberF;
 			validTeamMember[old] = false;
 			isProposing[old] = false;
 			teamMemberF = msg.sender;
 			validTeamMember[teamMemberF] = true;
 		} else if (proposingAddressIndex[msg.sender] == 6) {
-			address old = teamMemberG;
+			old = teamMemberG;
 			validTeamMember[old] = false;
 			isProposing[old] = false;
 			teamMemberG = msg.sender;
 			validTeamMember[teamMemberG] = true;
 		} else if (proposingAddressIndex[msg.sender] == 7) {
-			address old = teamMemberH;
+			old = teamMemberH;
 			validTeamMember[old] = false;
 			isProposing[old] = false;
 			teamMemberH = msg.sender;
 			validTeamMember[teamMemberH] = true;
 		} else if (proposingAddressIndex[msg.sender] == 8) {
-			address old = teamMemberI;
+			old = teamMemberI;
 			validTeamMember[old] = false;
 			isProposing[old] = false;
 			teamMemberI = msg.sender;

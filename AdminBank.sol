@@ -57,7 +57,7 @@ contract AdminBank {
 
 	address public teamMemberA = 0x2597afE84661669E590016E51f8FB0059D1Ad63e; 
 	address public teamMemberB = 0x2E6C1b2B4F7307dc588c289C9150deEB1A66b73d; 
-	address public teamMemberC = 0x3238B53A910B69f5dBDb31786613cE944536BA19; 
+	address public teamMemberC = 0xB3CaC7157d772A7685824309Dc1eB79497839795; 
 	address public teamMemberD = 0x87395d203B35834F79B46cd16313E6027AE4c9D4; 
 	address public teamMemberE = 0x3f88F4D7FCd083969539B7ce4056f72c81730938; 
 	address public teamMemberF = 0xd68af19b51c41a69e121fb5fb4d77768711c4979; 

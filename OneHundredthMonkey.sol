@@ -1,6 +1,61 @@
-////////////////////////
-//ONE HUNDREDTH MONKEY//
-////////////////////////
+/*
+ ____   _______  _______  _______  __   __    __   __  _______  __    _  ___   _  _______  __   __ 
+|    | |  _    ||  _    ||       ||  | |  |  |  |_|  ||       ||  |  | ||   | | ||       ||  | |  |
+ |   | | | |   || | |   ||_     _||  |_|  |  |       ||   _   ||   |_| ||   |_| ||    ___||  |_|  |
+ |   | | | |   || | |   |  |   |  |       |  |       ||  | |  ||       ||      _||   |___ |       |
+ |   | | |_|   || |_|   |  |   |  |       |  |       ||  |_|  ||  _    ||     |_ |    ___||_     _|
+ |   | |       ||       |  |   |  |   _   |  | ||_|| ||       || | |   ||    _  ||   |___   |   |  
+ |___| |_______||_______|  |___|  |__| |__|  |_|   |_||_______||_|  |__||___| |_||_______|  |___|  
+
+                                          
+                                           `oyyydssydy-                                             
+                                    `/so/`:hyyhhhyyhhhddyooo+/:-`                                   
+                                     `:dhhdhyhhyyhhyhhhhhhhhhhyyyso+-`                              
+                               `-+oyhhhhhhhhhhhhhhhhhhhhyysssyyyyysoos+/.                           
+                           `:oydhhhhhhhhhhhhhhhhhhhhhhyyyyyyysssssssso+/oo/`                        
+                        `/ydhhhhhhhhhhhhhhhhhhhhhhhyysssssssssssssssossso++s+`                      
+                      -sysyhhhhhhhhhhhhhhhhhhhhhyyssssssysssssssoooosooosso+oy+`                    
+                    .sy+ohhhhhhhhhhhhhhhhhhhhyyyyyyyyyyysssssssssssooosoossso+sy:                   
+                  `oy++syhhhhhhhhhhhhhhddhhhhhhhhhhhhhhhhhhhyysssssssssssssssoosys`                 
+                 :hs+oyhhhhhhhhhhhddddddhysyhhhhhhhhhhhhhhhhhhhhyysssssysssssyssssy`                
+                ohosyhhhhhhhhhhhhhddddhhsyhyhhhhhhhhddddddddddddhhhyysssyysssyhyhyhh`  `----.       
+              `yhsyhhhhhhdddddddddddhhhyhyshhhhhddhyo+//:::://oshddhhhssshhysyhhhhdds:/-.```-/:`    
+             `yhhhhhhhhhhddmdddddhhhhhhhhhhhhddyo/:-------------:+yddhhyshhhhhhhddhy:`.-//+/-..+`   
+             yhhhhhhhhddddddddddmdddhhhhhhhhdy+:--:::::-----------:ohddhhhhhhhhddhs:-/oyysssyo-.o   
+            +hhhhhhdddhys+/////ydhddddhhdhdds/-:++/::---------------+dmdhhhhhddhho///ss++++++ss.::  
+           `dhhhhdddy+/:------/ddyshdhdddddy/-+s+/-::/+++++:--------:sdddhhhhddho/+ooo+++///++y:.o  
+    `-::::-+dhhhddh+:---::://:oh+/+dhdhsddd+--s////++:`./++oo/-------+hmdhhhddhdhdho+++oo+////+:`o  
+  .:-.`..-/dhhhddy/:-::::::/+os+//odddo+hdd/--:///o/` omo..:hy+------/hmddhdddmddmhddddyssyo///-`o  
+ ::`.-:////mhhhdh//------://++++:-/yddo//sd/:--//++  oNmy-.-sNh/-----/hmddddhdddddmmddyy+++s///--/  
+::`./ssooysmhhddo/-----/o/.`.:/o+:-:/os+:-:/:--:/s-  dNNNmmmNNNo-----/hmdddddddddddddyo++//////.o`  
++..:s+++++omdhdd+/----:s. :y:-/yyo:----::::-----/o:  sNNNNNNNNNo-----+dmdddddddddmmmmmmy///////:/   
+o`-/s/////+dhhdd+/----++  mdo/+dNm+-------------:+s. `dNNNNNNNh/-----sddddddddddddmdyoos///////o    
+o`-/o//:://yhhhdo/:---/o` dNNNNNNNy:-------------:/o-``+dNNNmdosoo+-/hmddddddddddmNddo++/////++     
++.-://+syssydhhhh//---:o: .dNNNNNNy:----::::::::::::+++/:+shho/----:ymdddddddddddNsso+++++//o/      
+`+.-///+oyyhdhhhds/:---:o+.`/ydmdh+:/++//:::-:---::::////+yo:-----:ymmdddddddddddm////////+/`       
+ -/.:+/+oohdhhhhhds//----/++///+oo+/:-------------------://+::--:/hmmdddddddddddmmhs++++/:`         
+  :/./s/:ydhdhhhhhds//:--+soosss+:--------------------------//++sdmmmdddddddmmmmmmmh                
+   -+.-osy+odddhhhhdho//::---/+:-----------://:::--------------/odmmmdddddddmmmmmmd.                
+    `//--:++hyyhdhhhdmhs+///o/--:-:/:-----::-/++/----------------/sdmmddddddmmmmmd.                 
+      .//----:+oyddddddmmdhs/--+-/+oo+/:--:+++/+/-------------...-/ohmmddddmmmmmy`                  
+        `-:/++++/smmdddddmh/---:::++oo+/--//////:---------:++:--:///+hmmddmmmmd/                    
+              ``/hmmdddddd+:------::///:--:///::----------:/ooo+/////sdmmmmmdo`                     
+              -dmdmmmdhyhs//:-------------------------::/oss/////////odmmmh/`                       
+              d/`dmmmdo/:----::::::::::::::-------::/ooo+++//////////odh+.                          
+              . `d-+dmds+/:::---......-----::://+oo+:.``+o///////////s`                             
+                 `  /dy-+o++++++o+++++++ooo+++/:.`   -+s+///////////o-                              
+                     `.   +/////+oshddddy+-.`  `.-/oyhs/://////////o-                               
+                           :+///////+oyddddhhhhhhhhhs+:-/////////++.                                
+                            `//////////+oshhdhhhyso/:--:///////++-                                  
+                              ./+/////////:::::-....-://////+o/.                                    
+                                `:/+/////////:::::///////++/-                                       
+                                    .::/++/////////+++/:-`                                          
+                                         `.-------.`            
+
+
+https://monkey.game
+
+*/
 
 pragma solidity ^0.4.25;
 

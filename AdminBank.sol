@@ -59,7 +59,7 @@ contract AdminBank {
 	address public teamMemberB = 0x2E6C1b2B4F7307dc588c289C9150deEB1A66b73d; 
 	address public teamMemberC = 0xB3CaC7157d772A7685824309Dc1eB79497839795; 
 	address public teamMemberD = 0x87395d203B35834F79B46cd16313E6027AE4c9D4; 
-	address public teamMemberE = 0x3f88F4D7FCd083969539B7ce4056f72c81730938; 
+	address public teamMemberE = 0x2c3e0d5cbb08e0892f16bf06c724ccce6a757b1c; 
 	address public teamMemberF = 0xd68af19b51c41a69e121fb5fb4d77768711c4979; 
 	address public teamMemberG = 0x8c992840Bc4BA758018106e4ea9E7a1d6F0F11e5; 
 	address public teamMemberH = 0xd83FAf0D707616752c4AbA00f799566f45D4400A; 
@@ -69,9 +69,9 @@ contract AdminBank {
 	uint256 public teamMemberBrate = 20; //20%
 	uint256 public teamMemberCrate = 15; //15%
 	uint256 public teamMemberDrate = 15; //15%
-	uint256 public teamMemberErate = 5; //5%
-	uint256 public teamMemberFrate = 5; //5%
-	uint256 public teamMemberGrate = 5; //5%
+	uint256 public teamMemberErate = 7; //7%
+	uint256 public teamMemberFrate = 4; //4%
+	uint256 public teamMemberGrate = 4; //4%
 	uint256 public teamMemberHrate = 5; //5%
 	uint256 public teamMemberIrate = 10; //10%
 

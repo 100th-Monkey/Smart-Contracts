@@ -198,14 +198,16 @@ contract OneHundredthMonkey {
 	uint256 public minTokensPerMiniGame = 10000; //between 1x and 2x this amount of tokens generated each minigame 
 
 	//USER TRACKING PUBLIC
+	address[] public uniqueAddress;
+	mapping (address => bool) public knownUsers;
 	mapping (address => uint256) public userTokens;
 	mapping (address => uint256) public userBalance;
 	mapping (address => mapping (uint256 => uint256)) public userMiniGameTokens;
 	mapping (address => mapping (uint256 => uint256)) public userRoundTokens;
+	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMin;
+	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMax;
 
 	//USER TRACKING INTERNAL
-	address[] internal uniqueAddress;
-	mapping (address => bool) internal knownUsers;
 	mapping (address => bool) internal userCycleChecked;
 	mapping (address => uint256) internal userLastMiniGameInteractedWith;
 	mapping (address => uint256) internal userLastRoundInteractedWith;
@@ -219,8 +221,6 @@ contract OneHundredthMonkey {
 	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundTotal;
 	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundClaimed;
 	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundUnclaimed;
-	mapping (address => mapping (uint256 => uint256[])) internal userMiniGameTokensMin;
-	mapping (address => mapping (uint256 => uint256[])) internal userMiniGameTokensMax;
 
 	
 	///////////////

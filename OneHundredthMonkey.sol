@@ -58,8 +58,9 @@ contract OneHundredthMonkey {
 	bool public gameActive = false;
 	bool public earlyResolveACalled = false;
 	bool public earlyResolveBCalled = false;
-	uint256 public miniGamesPerRound = 100; //@dev lower for testing 
-	uint256 public miniGamesPerCycle = 1000; //@dev lower for testing 
+	uint256 public activationTime = 1541869200; // (GMT): Saturday, November 10, 2018 5:00:00 PM
+	uint256 public miniGamesPerRound = 100; 
+	uint256 public miniGamesPerCycle = 1000; 
 	uint256 public miniGamePotRate = 25; //25%
 	uint256 public progressivePotRate = 25; //25%
 	uint256 public roundDivRate = 20; //20%
@@ -76,9 +77,9 @@ contract OneHundredthMonkey {
 	
 	//RNG
 	uint256 internal RNGblockDelay = 1;
-	uint256 public salt = 0; //@dev change to internal after testing 
-	bytes32 public hashA; //@dev change to internal after testing 
-	bytes32 public hashB; //@dev change to internal after testing 
+	uint256 internal salt = 0; 
+	bytes32 internal hashA; 
+	bytes32 internal hashB; 
 
 	//MINIGAME TRACKING
 	bool public miniGameProcessing;
@@ -148,24 +149,23 @@ contract OneHundredthMonkey {
 	mapping (address => mapping (uint256 => uint256)) public userRoundTokens;
 
 	//USER TRACKING INTERNAL
-	//@dev change back to internal after testing
-	address[] public uniqueAddress;
-	mapping (address => bool) public knownUsers;
-	mapping (address => bool) public userCycleChecked;
-	mapping (address => uint256) public userLastMiniGameInteractedWith;
-	mapping (address => uint256) public userLastRoundInteractedWith;
-	mapping (address => uint256) public userLastMiniGameChecked;
-	mapping (address => uint256) public userLastRoundChecked;
-	mapping (address => mapping (uint256 => uint256)) public userShareMiniGame;
-	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameTotal;
-	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameClaimed;
-	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameUnclaimed;
-	mapping (address => mapping (uint256 => uint256)) public userShareRound;
-	mapping (address => mapping (uint256 => uint256)) public userDivsRoundTotal;
-	mapping (address => mapping (uint256 => uint256)) public userDivsRoundClaimed;
-	mapping (address => mapping (uint256 => uint256)) public userDivsRoundUnclaimed;
-	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMin;
-	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMax;
+	address[] internal uniqueAddress;
+	mapping (address => bool) internal knownUsers;
+	mapping (address => bool) internal userCycleChecked;
+	mapping (address => uint256) internal userLastMiniGameInteractedWith;
+	mapping (address => uint256) internal userLastRoundInteractedWith;
+	mapping (address => uint256) internal userLastMiniGameChecked;
+	mapping (address => uint256) internal userLastRoundChecked;
+	mapping (address => mapping (uint256 => uint256)) internal userShareMiniGame;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameTotal;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameClaimed;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameUnclaimed;
+	mapping (address => mapping (uint256 => uint256)) internal userShareRound;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundTotal;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundClaimed;
+	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundUnclaimed;
+	mapping (address => mapping (uint256 => uint256[])) internal userMiniGameTokensMin;
+	mapping (address => mapping (uint256 => uint256[])) internal userMiniGameTokensMax;
 
 	
 	///////////////
@@ -200,7 +200,7 @@ contract OneHundredthMonkey {
 	  }
 
 	modifier gameOpen() {
-		require (gameActive == true, "the game must be open");
+		require (gameActive == true || now >= activationTime, "the game must be open");
 	  	if (miniGameProcessing == true) {
 	  		require (block.number > miniGameProcessingBegun + RNGblockDelay, "the round is still processing. try again soon");
 	  	}
@@ -324,7 +324,7 @@ contract OneHundredthMonkey {
 		adminBalance = 0;
 		adminBank.call.value(balance).gas(100000)();
 
-		emit adminWithdrew(balance, msg.sender, "an admin just withdrew");
+		emit adminWithdrew(balance, msg.sender, "an admin just withdrew to the admin bank");
 	}
 
 	function foundationWithdraw() external {
@@ -335,18 +335,6 @@ contract OneHundredthMonkey {
 		foundationFund.call.value(balance).gas(100000)();
 
 		emit adminWithdrew(balance, msg.sender, "an admin just withdrew to the foundation fund");
-	}
-
-	function startCycle() external onlyAdmins() onlyHumans() {
-		require (gameActive == false && cycleCount == 0, "the cycle has already been started");
-		
-		gameActive = true;
-		cycleStart();
-		roundStart();
-		miniGameStart();
-
-		emit cycleStarted(msg.sender, "a new cycle just started"); 
-
 	}
 
 	//this function begins resolving the round in the event that the game has stalled
@@ -388,11 +376,6 @@ contract OneHundredthMonkey {
 	    emit contractDestroyed(msg.sender, address(this).balance, "contract destroyed"); 
 
 	    selfdestruct(foundationFund);
-	}
-
-	//@dev only for testing. remove on mainnet release
-	function close() external onlyAdmins() onlyHumans() {
-		selfdestruct(msg.sender);
 	}
 
 
@@ -575,9 +558,25 @@ contract OneHundredthMonkey {
 	//INTERNAL FUNCTIONS//
 	//////////////////////
 
+	function startCycle() internal {
+		require (gameActive == false && cycleCount == 0, "the cycle has already been started");
+		
+		gameActive = true;
+		cycleStart();
+		roundStart();
+		miniGameStart();
+
+		emit cycleStarted(msg.sender, "a new cycle just started"); 
+	}
+
 	function buyInternal(uint256 _amount, address _referral) internal {
 		require (_amount >= tokenPrice, "you must buy at least one token");
 		require (userMiniGameTokensMin[msg.sender][miniGameCount].length < 10, "you are buying too often in this round"); //sets up bounded loop 
+
+		//start cycle on first buy
+		if (gameActive == false && now >= activationTime) {
+			startCycle();
+		}
 
 		//update divs here to prevent overwriting userLastRoundInteractedWith
 		if (userLastRoundInteractedWith[msg.sender] < roundCount || userLastMiniGameInteractedWith[msg.sender] < miniGameCount) {
@@ -908,7 +907,6 @@ contract OneHundredthMonkey {
 
 	function awardRoundPrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-		//@dev ensure this dymanic
 		uint256 currentRoundTokens = miniGameTokenRangeMax[miniGameCount.sub(1)].sub(roundTokenRangeMin[roundCount]);
 	    uint256 winningNumber = uint256(hash).mod(currentRoundTokens);
 	    roundPrizeNumber[roundCount] = winningNumber + roundTokenRangeMin[roundCount];

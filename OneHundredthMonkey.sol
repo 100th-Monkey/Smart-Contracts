@@ -54,6 +54,15 @@ o`-/o//:://yhhhdo/:---/o` dNNNNNNNy:-------------:/o-``+dNNNmdosoo+-/hmddddddddd
 
 
 https://monkey.game
+https://discord.gg/3UQ4dNj
+
+DISCLAIMER:
+
+Please note, during your use of this contract, that online gambling is an entertainment vehicle, and that it carries with it a certain degree of financial risk. 
+Players should be aware of this risk, and govern themselves accordingly. All users of this contract should exercise responsibility when playing in online casinos, lotteries, and dAPPS. 
+CIRCUS FREAKS PRODUCTIONS have undertaken the appropriate steps to inform all those interested in online gaming about the dangers of excess play; that could potentially result from such an activity. 
+There is nothing contained herein that constitutes a guarantee of winning, nor is there an intention to induce anyone into violating any local, state or national laws. 
+Recognizing that the laws and regulations involving online gaming are different everywhere, readers are advised to check with the laws that exist within their own jurisdiction to ascertain the legality of the activities which are covered.
 
 */
 
@@ -393,6 +402,7 @@ contract OneHundredthMonkey {
 	}
 
 	//this function begins resolving the round in the event that the game has stalled
+	//it can be called no sooner than 1 week after the start of a minigame 
 	//can only be called once. can be restarted with restartMiniGame if 256 blocks pass
 	function earlyResolveA() external onlyAdmins() onlyHumans() gameOpen() {
 		require (now > miniGameStartTime[miniGameCount] + 604800 && miniGameProcessing == false, "earlyResolveA cannot be called yet"); //1 week
@@ -422,10 +432,10 @@ contract OneHundredthMonkey {
 		emit processingRestarted(msg.sender, "mini-game processing was restarted");
 	}
 
-	//admins can close the contract no sooner than 90 days after a full cycle completes 
+	//admins can close the contract no sooner than 30 days after a full cycle completes 
 	//users need to withdraw funds before this date or risk losing them
 	function zeroOut() external onlyAdmins() onlyHumans() {
-	    require (now >= cycleEnded + 90 days && cycleOver == true, "too early to close the contract"); 
+	    require (now >= cycleEnded + 30 days && cycleOver == true, "too early to close the contract"); 
 	    
 	  	//event emited before selfdestruct
 	    emit contractDestroyed(msg.sender, address(this).balance, "contract destroyed"); 
@@ -962,7 +972,13 @@ contract OneHundredthMonkey {
 
 	function awardRoundPrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-		uint256 currentRoundTokens = miniGameTokenRangeMax[miniGameCount.sub(1)].sub(roundTokenRangeMin[roundCount]);
+		uint256 currentRoundTokens;
+		if (miniGameCount > 1) {
+			currentRoundTokens = miniGameTokenRangeMax[miniGameCount.sub(1)].sub(roundTokenRangeMin[roundCount]);
+		//handles edge case of early resolve during the first minigame 
+		} else if (miniGameCount == 1) {
+			currentRoundTokens = miniGameTokensActive[1];
+		}
 	    uint256 winningNumber = uint256(hash).mod(currentRoundTokens);
 	    roundPrizeNumber[roundCount] = winningNumber + roundTokenRangeMin[roundCount];
 	    //calculate round prize here 
@@ -979,7 +995,13 @@ contract OneHundredthMonkey {
 
 	function awardCyclePrize() internal {
 		bytes32 hash = keccak256(abi.encodePacked(salt, hashA, hashB));
-	    uint256 winningNumber = uint256(hash).mod(miniGameTokenRangeMax[miniGameCount - 1]);
+	    uint256 winningNumber;
+	    if (miniGameCount > 1) {
+	    	winningNumber = uint256(hash).mod(miniGameTokenRangeMax[miniGameCount - 1]);
+	    //handles edge case of early resolve during the first minigame 
+	    } else if (miniGameCount == 1) {
+	    	winningNumber = uint256(hash).mod(miniGameTokensActive[1]);
+	    }
 	    cyclePrizeWinningNumber = winningNumber;
 	    gameActive = false;
 	    cycleEnded = now;

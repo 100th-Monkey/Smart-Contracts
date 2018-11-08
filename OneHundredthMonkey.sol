@@ -236,7 +236,7 @@ contract OneHundredthMonkey {
 	//CONSTRUCTOR//
 	///////////////
 
-	constructor(address _adminBank, address _foundationFund, address _adminTwo, address _adminThree) public {
+	constructor(address _adminBank, address _foundationFund, address _adminTwo, address _adminThree, address _adminFour) public {
 		//set dev bank address and admins
 		adminBank = _adminBank;
 		foundationFund = _foundationFund;
@@ -246,6 +246,8 @@ contract OneHundredthMonkey {
 		isAdmin[_adminTwo] = true; 
 		admins.push(_adminThree);
 		isAdmin[_adminThree] = true; 
+		admins.push(_adminFour);
+		isAdmin[_adminFour] = true; 
 	}
 
 	

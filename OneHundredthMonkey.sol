@@ -6,65 +6,6 @@
  |   | | |_|   || |_|   |  |   |  |       |  |       ||  |_|  ||  _    ||     |_ |    ___||_     _|
  |   | |       ||       |  |   |  |   _   |  | ||_|| ||       || | |   ||    _  ||   |___   |   |  
  |___| |_______||_______|  |___|  |__| |__|  |_|   |_||_______||_|  |__||___| |_||_______|  |___|  
-
-                                          
-                                           `oyyydssydy-                                             
-                                    `/so/`:hyyhhhyyhhhddyooo+/:-`                                   
-                                     `:dhhdhyhhyyhhyhhhhhhhhhhyyyso+-`                              
-                               `-+oyhhhhhhhhhhhhhhhhhhhhyysssyyyyysoos+/.                           
-                           `:oydhhhhhhhhhhhhhhhhhhhhhhyyyyyyysssssssso+/oo/`                        
-                        `/ydhhhhhhhhhhhhhhhhhhhhhhhyysssssssssssssssossso++s+`                      
-                      -sysyhhhhhhhhhhhhhhhhhhhhhyyssssssysssssssoooosooosso+oy+`                    
-                    .sy+ohhhhhhhhhhhhhhhhhhhhyyyyyyyyyyysssssssssssooosoossso+sy:                   
-                  `oy++syhhhhhhhhhhhhhhddhhhhhhhhhhhhhhhhhhhyysssssssssssssssoosys`                 
-                 :hs+oyhhhhhhhhhhhddddddhysyhhhhhhhhhhhhhhhhhhhhyysssssysssssyssssy`                
-                ohosyhhhhhhhhhhhhhddddhhsyhyhhhhhhhhddddddddddddhhhyysssyysssyhyhyhh`  `----.       
-              `yhsyhhhhhhdddddddddddhhhyhyshhhhhddhyo+//:::://oshddhhhssshhysyhhhhdds:/-.```-/:`    
-             `yhhhhhhhhhhddmdddddhhhhhhhhhhhhddyo/:-------------:+yddhhyshhhhhhhddhy:`.-//+/-..+`   
-             yhhhhhhhhddddddddddmdddhhhhhhhhdy+:--:::::-----------:ohddhhhhhhhhddhs:-/oyysssyo-.o   
-            +hhhhhhdddhys+/////ydhddddhhdhdds/-:++/::---------------+dmdhhhhhddhho///ss++++++ss.::  
-           `dhhhhdddy+/:------/ddyshdhdddddy/-+s+/-::/+++++:--------:sdddhhhhddho/+ooo+++///++y:.o  
-    `-::::-+dhhhddh+:---::://:oh+/+dhdhsddd+--s////++:`./++oo/-------+hmdhhhddhdhdho+++oo+////+:`o  
-  .:-.`..-/dhhhddy/:-::::::/+os+//odddo+hdd/--:///o/` omo..:hy+------/hmddhdddmddmhddddyssyo///-`o  
- ::`.-:////mhhhdh//------://++++:-/yddo//sd/:--//++  oNmy-.-sNh/-----/hmddddhdddddmmddyy+++s///--/  
-::`./ssooysmhhddo/-----/o/.`.:/o+:-:/os+:-:/:--:/s-  dNNNmmmNNNo-----/hmdddddddddddddyo++//////.o`  
-+..:s+++++omdhdd+/----:s. :y:-/yyo:----::::-----/o:  sNNNNNNNNNo-----+dmdddddddddmmmmmmy///////:/   
-o`-/s/////+dhhdd+/----++  mdo/+dNm+-------------:+s. `dNNNNNNNh/-----sddddddddddddmdyoos///////o    
-o`-/o//:://yhhhdo/:---/o` dNNNNNNNy:-------------:/o-``+dNNNmdosoo+-/hmddddddddddmNddo++/////++     
-+.-://+syssydhhhh//---:o: .dNNNNNNy:----::::::::::::+++/:+shho/----:ymdddddddddddNsso+++++//o/      
-`+.-///+oyyhdhhhds/:---:o+.`/ydmdh+:/++//:::-:---::::////+yo:-----:ymmdddddddddddm////////+/`       
- -/.:+/+oohdhhhhhds//----/++///+oo+/:-------------------://+::--:/hmmdddddddddddmmhs++++/:`         
-  :/./s/:ydhdhhhhhds//:--+soosss+:--------------------------//++sdmmmdddddddmmmmmmmh                
-   -+.-osy+odddhhhhdho//::---/+:-----------://:::--------------/odmmmdddddddmmmmmmd.                
-    `//--:++hyyhdhhhdmhs+///o/--:-:/:-----::-/++/----------------/sdmmddddddmmmmmd.                 
-      .//----:+oyddddddmmdhs/--+-/+oo+/:--:+++/+/-------------...-/ohmmddddmmmmmy`                  
-        `-:/++++/smmdddddmh/---:::++oo+/--//////:---------:++:--:///+hmmddmmmmd/                    
-              ``/hmmdddddd+:------::///:--:///::----------:/ooo+/////sdmmmmmdo`                     
-              -dmdmmmdhyhs//:-------------------------::/oss/////////odmmmh/`                       
-              d/`dmmmdo/:----::::::::::::::-------::/ooo+++//////////odh+.                          
-              . `d-+dmds+/:::---......-----::://+oo+:.``+o///////////s`                             
-                 `  /dy-+o++++++o+++++++ooo+++/:.`   -+s+///////////o-                              
-                     `.   +/////+oshddddy+-.`  `.-/oyhs/://////////o-                               
-                           :+///////+oyddddhhhhhhhhhs+:-/////////++.                                
-                            `//////////+oshhdhhhyso/:--:///////++-                                  
-                              ./+/////////:::::-....-://////+o/.                                    
-                                `:/+/////////:::::///////++/-                                       
-                                    .::/++/////////+++/:-`                                          
-                                         `.-------.`        
-
-The game starts on Saturday, November 10, 2018 at 5:00:00 PM (GMT)
-
-https://monkey.game
-https://discord.gg/3UQ4dNj
-
-DISCLAIMER:
-
-Please note, during your use of this contract, that online gambling is an entertainment vehicle, and that it carries with it a certain degree of financial risk. 
-Players should be aware of this risk, and govern themselves accordingly. All users of this contract should exercise responsibility when playing in online casinos, lotteries, and dAPPS. 
-CIRCUS FREAKS PRODUCTIONS have undertaken the appropriate steps to inform all those interested in online gaming about the dangers of excess play; that could potentially result from such an activity. 
-There is nothing contained herein that constitutes a guarantee of winning, nor is there an intention to induce anyone into violating any local, state or national laws. 
-Recognizing that the laws and regulations involving online gaming are different everywhere, readers are advised to check with the laws that exist within their own jurisdiction to ascertain the legality of the activities which are covered.
-
 */
 
 pragma solidity ^0.4.25;
@@ -123,7 +64,7 @@ contract OneHundredthMonkey {
 	bool public gameActive = false;
 	bool public earlyResolveACalled = false;
 	bool public earlyResolveBCalled = false;
-	uint256 public activationTime = 1541869200; // (GMT): Saturday, November 10, 2018 5:00:00 PM
+	uint256 public activationTime = now; // (GMT): Saturday, November 10, 2018 5:00:00 PM
 	uint256 public miniGamesPerRound = 100; 
 	uint256 public miniGamesPerCycle = 10000; 
 	uint256 public miniGamePotRate = 25; //25%
@@ -218,37 +159,31 @@ contract OneHundredthMonkey {
 	mapping (address => mapping (uint256 => uint256[])) public userMiniGameTokensMax;
 
 	//USER TRACKING INTERNAL
-	mapping (address => bool) internal userCycleChecked;
-	mapping (address => uint256) internal userLastMiniGameInteractedWith;
-	mapping (address => uint256) internal userLastRoundInteractedWith;
-	mapping (address => uint256) internal userLastMiniGameChecked;
-	mapping (address => uint256) internal userLastRoundChecked;
-	mapping (address => mapping (uint256 => uint256)) internal userShareMiniGame;
-	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameTotal;
-	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameClaimed;
-	mapping (address => mapping (uint256 => uint256)) internal userDivsMiniGameUnclaimed;
-	mapping (address => mapping (uint256 => uint256)) internal userShareRound;
-	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundTotal;
-	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundClaimed;
-	mapping (address => mapping (uint256 => uint256)) internal userDivsRoundUnclaimed;
+	mapping (address => bool) public userCycleChecked;
+	mapping (address => uint256) public userLastMiniGameInteractedWith;
+	mapping (address => uint256) public userLastRoundInteractedWith;
+	mapping (address => uint256) public userLastMiniGameChecked;
+	mapping (address => uint256) public userLastRoundChecked;
+	mapping (address => mapping (uint256 => uint256)) public userShareMiniGame;
+	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameTotal;
+	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameClaimed;
+	mapping (address => mapping (uint256 => uint256)) public userDivsMiniGameUnclaimed;
+	mapping (address => mapping (uint256 => uint256)) public userShareRound;
+	mapping (address => mapping (uint256 => uint256)) public userDivsRoundTotal;
+	mapping (address => mapping (uint256 => uint256)) public userDivsRoundClaimed;
+	mapping (address => mapping (uint256 => uint256)) public userDivsRoundUnclaimed;
 
 	
 	///////////////
 	//CONSTRUCTOR//
 	///////////////
 
-	constructor(address _adminBank, address _foundationFund, address _adminTwo, address _adminThree, address _adminFour) public {
+	constructor(address _adminBank, address _foundationFund) public {
 		//set dev bank address and admins
 		adminBank = _adminBank;
 		foundationFund = _foundationFund;
 		admins.push(msg.sender);
 		isAdmin[msg.sender] = true;
-		admins.push(_adminTwo);
-		isAdmin[_adminTwo] = true; 
-		admins.push(_adminThree);
-		isAdmin[_adminThree] = true; 
-		admins.push(_adminFour);
-		isAdmin[_adminFour] = true; 
 	}
 
 	
@@ -647,13 +582,15 @@ contract OneHundredthMonkey {
 		}
 
 		//update divs here to prevent overwriting userLastRoundInteractedWith
-		if (userLastRoundInteractedWith[msg.sender] < roundCount || userLastMiniGameInteractedWith[msg.sender] < miniGameCount) {
+		if (userLastRoundInteractedWith[msg.sender] < roundCount || userLastMiniGameInteractedWith[msg.sender] < miniGameCount || miniGameProcessing == false) {
 			updateUserBalance(msg.sender);
 		}
 
 		//if this is the first tx after processing period is over, call generateSeedB
+		//update user balance here to solve edge case of same user ending a minigame and starting the next
 		if (miniGameProcessing == true && block.number > miniGameProcessingBegun + RNGblockDelay) {
 			generateSeedB();
+			updateUserBalance(msg.sender);
 		}
 
 		//track user
@@ -776,64 +713,67 @@ contract OneHundredthMonkey {
 	}
 
 	function checkPrizes(address _user) internal {
-		//push cycle prizes to persistent storage
-		if (cycleOver == true && userCycleChecked[_user] == false) {
-			//get minigame cycle prize was in 
-			uint256 mg = cyclePrizeInMinigame;
-			//check if user won cycle prize 
-			if (cylcePrizeClaimed == false && userMiniGameTokensMax[_user][mg].length > 0) {
+		//don't check for prizes on the first buy of the round
+		if (miniGameProcessing == false) {
+			//push cycle prizes to persistent storage
+			if (cycleOver == true && userCycleChecked[_user] == false) {
+				//get minigame cycle prize was in 
+				uint256 mg = cyclePrizeInMinigame;
+				//check if user won cycle prize 
+				if (cylcePrizeClaimed == false && userMiniGameTokensMax[_user][mg].length > 0) {
+					//check if user won minigame 
+					//loop iterations bounded to a max of 10 on buy()
+		  			for (uint256 i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
+		  				if (cyclePrizeWinningNumber >= userMiniGameTokensMin[_user][mg][i] && cyclePrizeWinningNumber <= userMiniGameTokensMax[_user][mg][i]) {
+		  					userBalance[_user] += cycleProgressivePot;
+		  					cylcePrizeClaimed = true;
+							cyclePrizeWinner = msg.sender;				
+		  					break;
+		  				}
+		  			}
+				}
+				userCycleChecked[_user] = true;
+			}
+			//push round prizes to persistent storage
+			if (roundPrizeClaimed[userLastRoundInteractedWith[_user]] == false && roundPrizeTokenRangeIdentified[userLastRoundInteractedWith[_user]]) {
+				//get minigame round prize was in 
+				uint256 rnd = userLastRoundInteractedWith[_user];
+				uint256 mgp = roundPrizeInMinigame[rnd];
+				//check if user won round prize
+				for (i = 0; i < userMiniGameTokensMin[_user][mgp].length; i++) {
+					if (roundPrizeNumber[rnd] >= userMiniGameTokensMin[_user][mgp][i] && roundPrizeNumber[rnd] <= userMiniGameTokensMax[_user][mgp][i]) {
+						userBalance[_user] += roundPrizePot[mgp];
+						roundPrizeClaimed[rnd] = true;
+						roundPrizeWinner[rnd] = msg.sender;		
+						break;
+					}
+				}
+				userLastRoundChecked[_user] = userLastRoundInteractedWith[_user];
+			}
+			//push minigame prizes to persistent storage
+			if (userLastMiniGameChecked[_user] < userLastMiniGameInteractedWith[_user] && miniGameCount >= userLastMiniGameInteractedWith[_user] && miniGamePrizeClaimed[userLastMiniGameInteractedWith[_user]] == false) {
 				//check if user won minigame 
-				//loop iterations bounded to a max of 10 on buy()
-	  			for (uint256 i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
-	  				if (cyclePrizeWinningNumber >= userMiniGameTokensMin[_user][mg][i] && cyclePrizeWinningNumber <= userMiniGameTokensMax[_user][mg][i]) {
-	  					userBalance[_user] += cycleProgressivePot;
-	  					cylcePrizeClaimed = true;
-						cyclePrizeWinner = msg.sender;				
-	  					break;
-	  				}
-	  			}
-			}
-			userCycleChecked[_user] = true;
-		}
-		//push round prizes to persistent storage
-		if (roundPrizeClaimed[userLastRoundInteractedWith[_user]] == false && roundPrizeTokenRangeIdentified[userLastRoundInteractedWith[_user]]) {
-			//get minigame round prize was in 
-			uint256 rnd = userLastRoundInteractedWith[_user];
-			uint256 mgp = roundPrizeInMinigame[rnd];
-			//check if user won round prize
-			for (i = 0; i < userMiniGameTokensMin[_user][mgp].length; i++) {
-				if (roundPrizeNumber[rnd] >= userMiniGameTokensMin[_user][mgp][i] && roundPrizeNumber[rnd] <= userMiniGameTokensMax[_user][mgp][i]) {
-					userBalance[_user] += roundPrizePot[mgp];
-					roundPrizeClaimed[rnd] = true;
-					roundPrizeWinner[rnd] = msg.sender;		
-					break;
+				mg = userLastMiniGameInteractedWith[_user];
+				for (i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
+					if (miniGamePrizeNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGamePrizeNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {
+						userBalance[_user] += miniGamePrizePot[mg];
+						miniGamePrizeClaimed[mg] = true;
+						miniGamePrizeWinner[mg] = msg.sender;			
+						break;
+					}
 				}
-			}
-			userLastRoundChecked[_user] = userLastRoundInteractedWith[_user];
-		}
-		//push minigame prizes to persistent storage
-		if (userLastMiniGameChecked[_user] < userLastMiniGameInteractedWith[_user] && miniGameCount > userLastMiniGameInteractedWith[_user]) {
-			//check if user won minigame 
-			mg = userLastMiniGameInteractedWith[_user];
-			for (i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
-				if (miniGamePrizeNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGamePrizeNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {
-					userBalance[_user] += miniGamePrizePot[mg];
-					miniGamePrizeClaimed[mg] = true;
-					miniGamePrizeWinner[mg] = msg.sender;			
-					break;
+				//check if user won airdrop
+				for (i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
+					if (miniGameAirdropNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGameAirdropNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {
+						userBalance[_user] += miniGameAirdropPot[mg];
+						miniGameAirdropClaimed[mg] = true;
+						miniGameAirdropWinner[mg] = msg.sender;
+						break;
+					}
 				}
+				//update last mini game checked 
+				userLastMiniGameChecked[_user] = userLastMiniGameInteractedWith[_user];
 			}
-			//check if user won airdrop
-			for (i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
-				if (miniGameAirdropNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGameAirdropNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {
-					userBalance[_user] += miniGameAirdropPot[mg];
-					miniGameAirdropClaimed[mg] = true;
-					miniGameAirdropWinner[mg] = msg.sender;
-					break;
-				}
-			}
-			//update last mini game checked 
-			userLastMiniGameChecked[_user] = userLastMiniGameInteractedWith[_user];
 		}
 	}
 
@@ -1162,8 +1102,8 @@ contract OneHundredthMonkey {
 			}
 		}
 		//push minigame prizes to persistent storage
-		if (userLastMiniGameChecked[_user] < userLastMiniGameInteractedWith[_user] && miniGameCount > userLastMiniGameInteractedWith[_user]) {
-			//check if user won minigame 
+		if (userLastMiniGameChecked[_user] < userLastMiniGameInteractedWith[_user] && miniGameCount >= userLastMiniGameInteractedWith[_user] && miniGamePrizeClaimed[userLastMiniGameInteractedWith[_user]] == false) {
+				//check if user won minigame 
 			mg = userLastMiniGameInteractedWith[_user];
 			for (i = 0; i < userMiniGameTokensMin[_user][mg].length; i++) {
 				if (miniGamePrizeNumber[mg] >= userMiniGameTokensMin[_user][mg][i] && miniGamePrizeNumber[mg] <= userMiniGameTokensMax[_user][mg][i]) {

@@ -39,7 +39,7 @@ library SafeMath {
 //CONTRACT INTERFACE
 
 contract OneHundredthMonkey {
-	function adminWithdraw() public {}
+	function foundationWithdraw() public {}
 }
 
 //MAIN CONTRACT
@@ -50,7 +50,7 @@ contract FoundationFund {
 
 	//CONSTANTS
 
-	uint256 public fundsReceived;
+	uint256 public fundsWithdrawn;
 	address public masterAdmin;
 	address public mainContract;
 	bool public mainContractSet = false;
@@ -69,9 +69,6 @@ contract FoundationFund {
 	mapping (address => uint256) public teamMemberUnclaimed;
 	mapping (address => uint256) public teamMemberClaimed;
 	mapping (address => bool) public validTeamMember;
-	mapping (address => bool) public isProposedAddress;
-	mapping (address => bool) public isProposing;
-	mapping (address => uint256) public proposingAddressIndex;
 
 	//CONSTRUCTOR
 
@@ -101,30 +98,10 @@ contract FoundationFund {
     }
 
 	//EVENTS
-	event fundsIn(
-		uint256 _amount,
-		address _sender,
-		uint256 _totalFundsReceived
-	);
 
 	event fundsOut(
 		uint256 _amount,
 		address _receiver
-	);
-
-	event addressChangeProposed(
-		address _old,
-		address _new
-	);
-
-	event addressChangeRemoved(
-		address _old,
-		address _new
-	);
-
-	event addressChanged(
-		address _old,
-		address _new
 	);
 
 	//FUNCTIONS
@@ -140,7 +117,7 @@ contract FoundationFund {
 	//withdrawProxy
 	function withdrawProxy() external isTeamMember() isMainContractSet() onlyHumans() {
 		OneHundredthMonkey o = OneHundredthMonkey(mainContract);
-		o.adminWithdraw();
+		o.foundationWithdraw();
 	}
 
 	//team member withdraw
@@ -164,7 +141,8 @@ contract FoundationFund {
 		}
 		
 		//update accounting 
-		uint256 teamMemberShare = fundsReceived.mul(rate).div(100);
+		uint256 totalFundsIn = address(this).balance.add(fundsWithdrawn);
+		uint256 teamMemberShare = totalFundsIn.mul(rate).div(100);
 		teamMemberTotal[user] = teamMemberShare;
 		teamMemberUnclaimed[user] = teamMemberTotal[user].sub(teamMemberClaimed[user]);
 		
@@ -172,84 +150,10 @@ contract FoundationFund {
 		uint256 toTransfer = teamMemberUnclaimed[user];
 		teamMemberUnclaimed[user] = 0;
 		teamMemberClaimed[user] = teamMemberTotal[user];
+		fundsWithdrawn += toTransfer;
 		user.transfer(toTransfer);
 
 		emit fundsOut(toTransfer, user);
-	}
-
-	function proposeNewAddress(address _new) external isTeamMember() onlyHumans() {
-		require (isProposedAddress[_new] == false, "this address cannot be proposed more than once");
-		require (isProposing[msg.sender] == false, "you can only propose one address at a time");
-
-		isProposing[msg.sender] = true;
-		isProposedAddress[_new] = true;
-
-		if (msg.sender == teamMemberA) {
-			proposingAddressIndex[_new] = 0;
-		} else if (msg.sender == teamMemberB) {
-			proposingAddressIndex[_new] = 1;
-		} else if (msg.sender == teamMemberC) {
-			proposingAddressIndex[_new] = 2;
-		} else if (msg.sender == teamMemberD) {
-			proposingAddressIndex[_new] = 3;
-		}
-
-		emit addressChangeProposed(msg.sender, _new);
-	}
-
-	function removeProposal(address _new) external isTeamMember() onlyHumans() {
-		require (isProposedAddress[_new] == true, "this address must be proposed but not yet accepted");
-		require (isProposing[msg.sender] == true, "your address must be actively proposing");
-
-		if (proposingAddressIndex[_new] == 0 && msg.sender == teamMemberA) {
-			isProposedAddress[_new] = false;
-			isProposing[msg.sender] = false;
-		} else if (proposingAddressIndex[_new] == 1 && msg.sender == teamMemberB) {
-			isProposedAddress[_new] = false;
-			isProposing[msg.sender] = false;
-		} else if (proposingAddressIndex[_new] == 2 && msg.sender == teamMemberC) {
-			isProposedAddress[_new] = false;
-			isProposing[msg.sender] = false;
-		} else if (proposingAddressIndex[_new] == 3 && msg.sender == teamMemberD) {
-			isProposedAddress[_new] = false;
-			isProposing[msg.sender] = false;
-		} 
-
-		emit addressChangeRemoved(msg.sender, _new);
-	}
-
-	function acceptProposal() external onlyHumans() {
-		require (isProposedAddress[msg.sender] == true, "your address must be proposed");
-		
-		if (proposingAddressIndex[msg.sender] == 0) {
-			address old = teamMemberA;
-			validTeamMember[old] = false;
-			isProposing[old] = false;
-			teamMemberA = msg.sender;
-			validTeamMember[teamMemberA] = true;
-		} else if (proposingAddressIndex[msg.sender] == 1) {
-			old = teamMemberB;
-			validTeamMember[old] = false;
-			isProposing[old] = false;
-			teamMemberB = msg.sender;
-			validTeamMember[teamMemberB] = true;
-		} else if (proposingAddressIndex[msg.sender] == 2) {
-			old = teamMemberC;
-			validTeamMember[old] = false;
-			isProposing[old] = false;
-			teamMemberC = msg.sender;
-			validTeamMember[teamMemberC] = true;
-		} else if (proposingAddressIndex[msg.sender] == 3) {
-			old = teamMemberD;
-			validTeamMember[old] = false;
-			isProposing[old] = false;
-			teamMemberD = msg.sender;
-			validTeamMember[teamMemberD] = true;
-		} 
-
-		isProposedAddress[msg.sender] = false;
-
-		emit addressChanged(old, msg.sender);
 	}
 
 	//VIEW FUNCTIONS
@@ -273,7 +177,8 @@ contract FoundationFund {
 			return 0;
 		}
 
-		uint256 teamMemberShare = fundsReceived.mul(rate).div(100);
+		uint256 totalFundsIn = address(this).balance.add(fundsWithdrawn);
+		uint256 teamMemberShare = totalFundsIn.mul(rate).div(100);
 		uint256 unclaimed = teamMemberShare.sub(teamMemberClaimed[_user]); 
 
 		return unclaimed;
@@ -285,8 +190,5 @@ contract FoundationFund {
 
 	//FALLBACK
 
-	function () public payable {
-		fundsReceived += msg.value;
-		emit fundsIn(msg.value, msg.sender, fundsReceived); 
-	}
+	function () public payable {}
 }

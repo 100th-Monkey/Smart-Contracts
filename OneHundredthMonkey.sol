@@ -50,8 +50,9 @@ o`-/o//:://yhhhdo/:---/o` dNNNNNNNy:-------------:/o-``+dNNNmdosoo+-/hmddddddddd
                               ./+/////////:::::-....-://////+o/.                                    
                                 `:/+/////////:::::///////++/-                                       
                                     .::/++/////////+++/:-`                                          
-                                         `.-------.`            
+                                         `.-------.`        
 
+The game starts on Saturday, November 10, 2018 at 5:00:00 PM (GMT)
 
 https://monkey.game
 https://discord.gg/3UQ4dNj
@@ -124,7 +125,7 @@ contract OneHundredthMonkey {
 	bool public earlyResolveBCalled = false;
 	uint256 public activationTime = 1541869200; // (GMT): Saturday, November 10, 2018 5:00:00 PM
 	uint256 public miniGamesPerRound = 100; 
-	uint256 public miniGamesPerCycle = 1000; 
+	uint256 public miniGamesPerCycle = 10000; 
 	uint256 public miniGamePotRate = 25; //25%
 	uint256 public progressivePotRate = 25; //25%
 	uint256 public roundDivRate = 20; //20%
@@ -388,17 +389,17 @@ contract OneHundredthMonkey {
 		require (adminBalance > 0, "there must be a balance");
 		uint256 balance = adminBalance;
 		adminBalance = 0;
-		adminBank.call.value(balance).gas(100000)();
+		adminBank.transfer(balance);
 
 		emit adminWithdrew(balance, msg.sender, "an admin just withdrew to the admin bank");
 	}
 
 	function foundationWithdraw() external {
 		require (isAdmin[msg.sender] == true || msg.sender == foundationFund);
-		require (adminBalance > 0, "there must be a balance");
+		require (foundationBalance > 0, "there must be a balance");
 		uint256 balance = foundationBalance;
 		foundationBalance = 0;
-		foundationFund.call.value(balance).gas(100000)();
+		foundationFund.transfer(balance);
 
 		emit adminWithdrew(balance, msg.sender, "an admin just withdrew to the foundation fund");
 	}
@@ -1088,7 +1089,7 @@ contract OneHundredthMonkey {
 	//helper function for up to date front end balances without state change
 	function checkDivsMgView(address _user) internal view returns(uint256 _divs) {
 		//set up local shorthand
-		uint256 _mg = userLastMiniGameChecked[_user];
+		uint256 _mg = userLastMiniGameInteractedWith[_user];
 		uint256 mgShare = userShareMiniGame[_user][_mg];
 		uint256 mgTotal = userDivsMiniGameTotal[_user][_mg];
 		uint256 mgUnclaimed = userDivsMiniGameUnclaimed[_user][_mg];
@@ -1103,7 +1104,7 @@ contract OneHundredthMonkey {
 	//helper function for up to date front end balances without state change
 	function checkDivsRndView(address _user) internal view returns(uint256 _divs) {
 		//set up local shorthand
-		uint256 _rnd = userLastRoundChecked[_user];
+		uint256 _rnd = userLastRoundInteractedWith[_user];
 		uint256 rndShare = userShareRound[_user][_rnd];
 		uint256 rndTotal = userDivsRoundTotal[_user][_rnd];
 		uint256 rndUnclaimed = userDivsRoundUnclaimed[_user][_rnd];

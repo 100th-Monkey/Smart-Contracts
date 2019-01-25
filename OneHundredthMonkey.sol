@@ -6,6 +6,7 @@
  |   | | |_|   || |_|   |  |   |  |       |  |       ||  |_|  ||  _    ||     |_ |    ___||_     _|
  |   | |       ||       |  |   |  |   _   |  | ||_|| ||       || | |   ||    _  ||   |___   |   |  
  |___| |_______||_______|  |___|  |__| |__|  |_|   |_||_______||_|  |__||___| |_||_______|  |___|  
+
 */
 
 pragma solidity ^0.4.25;
@@ -997,12 +998,20 @@ contract OneHundredthMonkey {
 	//reduces the search space on user prize updates 
 	function narrowCyclePrize() internal returns(uint256 _miniGameID) {
 		//first identify round 
-	    for (uint256 i = 1; i <= roundCount; i++) {
-	      if (cyclePrizeWinningNumber >= roundTokenRangeMin[i] && cyclePrizeWinningNumber <= roundTokenRangeMax[i]) {
-	        cyclePrizeInRound = i;
-	        break;
-	      }
-	    }
+		//if resolving in first round, don't bother searching
+		if (roundCount == 1) {
+			cyclePrizeInRound = 1;
+		} else {
+		    for (uint256 i = 1; i <= roundCount; i++) {
+		        if (cyclePrizeWinningNumber >= roundTokenRangeMin[i] && cyclePrizeWinningNumber <= roundTokenRangeMax[i]) {
+		        	cyclePrizeInRound = i;
+		        	break;
+		      	} else if (cyclePrizeWinningNumber >= roundTokenRangeMin[roundCount]) {
+		      		//the current round will not have a round token range max
+		      		cyclePrizeInRound = roundCount;
+		      	}
+		    }
+		}
 	    //set up minigame local accounting 
 	    uint256 miniGameRangeMin; 
 		uint256 miniGameRangeMax;
